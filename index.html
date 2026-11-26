@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- тестовая версия: не индексировать -->
+<meta name="theme-color" content="#372579">
+<title>Колледж телекоммуникаций МТУСИ</title>
+<link rel="icon" href="https://ct.mtuci.ru/favicon.ico">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>/* тема и режим доступности применяются до отрисовки — без «мигания» */
+try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;var a=JSON.parse(localStorage.getItem('a11y')||'{}');if(a.size&&a.size!=='0')document.documentElement.dataset.a11ySize=a.size;if(a.color&&a.color!=='normal')document.documentElement.dataset.a11yColor=a.color;if(a.img==='off')document.documentElement.dataset.a11yImg='off'}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#app">Перейти к содержимому</a>
+<div class="progress-line" id="progress"></div>
+<div class="a11y" id="a11y" role="region" aria-label="Настройки для слабовидящих"></div>
+<div class="topbar" id="topbar"></div>
+<header class="header" id="header"></header>
+<main id="app" tabindex="-1"><div class="loader"><i></i></div></main>
+<footer class="footer" id="footer"></footer>
+
+<div class="drawer" id="drawer"><div class="drawer__bg"></div><div class="drawer__panel"></div></div>
+<div class="modal" id="searchModal"></div>
+<div class="lightbox" id="lightbox"></div>
+<button class="ai-fab" id="aiFab" aria-label="ИИ-помощник"><svg class="icon spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg><span>Помощник</span></button>
+<section class="ai-panel" id="aiPanel" aria-label="ИИ-помощник"></section>
+<div class="cookie" id="cookie"></div>
+<button class="to-top" id="toTop" aria-label="Наверх"><svg class="icon" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
+<script>window.KT_DEMO=true</script>
+<script src="assets/js/matcher.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
