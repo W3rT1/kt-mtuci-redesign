@@ -73,6 +73,54 @@
     }
     return `<svg class="bp" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">${out}</svg>`;
   }
+  // Мозаика первого экрана: логотип колледжа в центре, плитки вокруг поворачиваются
+  // волной от логотипа к краям (как сигнал от передатчика). Цикл бесшовный:
+  // 4 поворота по 90° = полный оборот, плитка возвращается в исходное положение.
+  // Мозаика с бесшовной «волной» поворотов (как на первом экране), без логотипа.
+  // ox/oy — точка в клетках, откуда расходится волна (например, со стороны текста).
+  function brandWave(cols, rows, seed = 5, opt = {}) {
+    let s = seed * 9301 + 49297;
+    const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+    const T = 100, G = opt.gap ?? 8, W = cols * T + (cols - 1) * G, H = rows * T + (rows - 1) * G;
+    const ox = opt.ox ?? -1, oy = opt.oy ?? (rows - 1) / 2;
+    const shapes = [['M0 0H100A100 100 0 0 1 0 100Z', 6], ['M0 0H50A50 50 0 0 1 50 100H0Z', 4], ['M0 0H100V100Z', 3], ['M50 0A50 50 0 1 1 50 100A50 50 0 1 1 50 0Z', 2], ['M0 0H100V50H0Z', 2], ['', 2]];
+    const total = shapes.reduce((a, x) => a + x[1], 0);
+    const pick = () => { let r = rnd() * total; for (const sh of shapes) if ((r -= sh[1]) < 0) return sh[0]; return shapes[0][0]; };
+    let cells = '';
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const d = pick(); if (!d) continue;
+      const rot = Math.floor(rnd() * 4) * 90, alt = rnd() < 0.24;
+      const delay = (Math.hypot(x - ox, y - oy) * 0.4 + rnd() * 0.2).toFixed(2);
+      cells += `<g transform="translate(${x * (T + G)} ${y * (T + G)})"><g class="cell" style="animation-delay:${delay}s"><rect width="100" height="100" fill="none"/><g transform="rotate(${rot} 50 50)"><path class="t${alt ? ' alt' : ''}" style="animation-delay:${((x + y) * 0.06).toFixed(2)}s${alt ? `,${(rnd() * 6).toFixed(1)}s` : ''}" d="${d}"/></g></g></g>`;
+    }
+    return `<svg class="bp bp-wave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${cells}</svg>`;
+  }
+
+  function brandHeroArt(seed = 7) {
+    let s = seed * 9301 + 49297;
+    const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+    const N = 5, T = 100, G = 8, W = N * T + (N - 1) * G, LOGO_ROW = 2;
+    const shapes = [['M0 0H100A100 100 0 0 1 0 100Z', 6], ['M0 0H50A50 50 0 0 1 50 100H0Z', 4], ['M0 0H100V100Z', 3], ['M50 0A50 50 0 1 1 50 100A50 50 0 1 1 50 0Z', 2], ['M0 0H100V50H0Z', 2], ['M0 0H100V100H0Z', 1]];
+    const total = shapes.reduce((a, x) => a + x[1], 0);
+    const pick = () => { let r = rnd() * total; for (const sh of shapes) if ((r -= sh[1]) < 0) return sh[0]; return shapes[0][0]; };
+    let cells = '';
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      if (y === LOGO_ROW && x >= 1 && x <= 3) continue; // место под логотип
+      const dist = Math.max(Math.abs(y - LOGO_ROW), x < 1 ? 1 - x : x > 3 ? x - 3 : 0);
+      const d = pick(), rot = Math.floor(rnd() * 4) * 90, alt = rnd() < 0.24;
+      const delay = (dist * 0.45 + rnd() * 0.2).toFixed(2);
+      cells += `<g transform="translate(${x * (T + G)} ${y * (T + G)})"><g class="cell" style="animation-delay:${delay}s"><rect width="100" height="100" fill="none"/><g transform="rotate(${rot} 50 50)"><path class="t${alt ? ' alt' : ''}" style="animation-delay:${((x + y) * 0.06).toFixed(2)}s${alt ? `,${(rnd() * 6).toFixed(1)}s` : ''}" d="${d}"/></g></g></g>`;
+    }
+    const lx = T + G, ly = LOGO_ROW * (T + G), lw = 3 * T + 2 * G, cx = lx + lw / 2, cy = ly + T / 2;
+    const logo = esc(D.site.logo || 'https://ct.mtuci.ru/upload/logo.svg');
+    return `<svg class="bp bp-hero" viewBox="0 0 ${W} ${W}" aria-label="${esc(D.site.name)}" role="img">
+      <defs><filter id="toBrand" color-interpolation-filters="sRGB"><feFlood flood-color="#372579"/><feComposite in2="SourceAlpha" operator="in"/></filter></defs>
+      <g class="rings">${[0, 1, 2].map(i => `<circle cx="${cx}" cy="${cy}" r="${lw / 2}" style="animation-delay:${i * 2}s"/>`).join('')}</g>
+      ${cells}
+      <g class="logo-card"><rect x="${lx}" y="${ly}" width="${lw}" height="${T}" rx="18"/>
+        <image href="${logo}" x="${lx + 28}" y="${ly + 16}" width="${lw - 56}" height="${T - 32}" preserveAspectRatio="xMidYMid meet" filter="url(#toBrand)"/></g>
+    </svg>`;
+  }
   const seedOf = str => [...String(str)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7);
 
   // ---------------- утилиты ----------------
@@ -87,6 +135,11 @@
   const sectionOf = route => D.sections.find(s => s.route === route) || D.sections.find(s => s.items.some(i => i.route === route));
   const factVal = (sp, kw, mode = 0) => { const f = sp.facts.find(f => norm(f.label).includes(kw)); return f ? stripHtml((f.values[mode] ?? f.values[0]) || '') : ''; };
 
+  // Фирменный знак МТУСИ — семиугольник — и подпись в духе официального логотипа:
+  // «МТУСИ» крупно, «колледж телекоммуникаций» — дескриптор под ним.
+  const HEPTA = '50,10 81.3,25.1 89,58.9 67.4,86 32.6,86 11,58.9 18.7,25.1';
+  const heptagon = (cls = '') => `<svg class="hepta ${cls}" viewBox="0 0 100 100" aria-hidden="true"><polygon points="${HEPTA}"/></svg>`;
+  const logoLockup = () => `<span class="logo__mark">${heptagon()}</span><span class="logo__text"><b>МТУСИ</b><small>Колледж<br>телекоммуникаций</small></span>`;
   // ---------------- оболочка ----------------
   function renderShell() {
     const s = D.site;
@@ -100,7 +153,7 @@
       <a${aAttrs(s.lkUrl)} title="Личный кабинет">${ic('user')} <span class="hide-m">Личный кабинет</span></a>
     </div>`;
     $('#header').innerHTML = `<div class="container">
-      <a class="logo" href="#/" aria-label="${esc(s.name)} — на главную"><span class="logo__mark"><img src="${esc(s.logo || 'https://ct.mtuci.ru/upload/logo.svg')}" alt=""></span><span class="logo__text">${esc(s.shortName)}<small>Колледж телекоммуникаций</small></span></a>
+      <a class="logo" href="#/" aria-label="${esc(s.name)} — на главную">${logoLockup()}</a>
       <nav class="nav" aria-label="Основное меню">${D.sections.map(sec => sec.items.length ? `
         <div class="nav__item" data-sec="${sec.id}"><button class="nav__link" aria-expanded="false">${esc(sec.title)} ${ic('chev', 'chev')}</button>
           <div class="mega"><div class="mega__head"><b>${esc(sec.title)}</b><a class="btn btn-sm" href="#${sec.route}">Обзор раздела ${ic('arrow')}</a></div>
@@ -116,7 +169,7 @@
       ${D.sections.map(sec => sec.items.length ? `<details><summary>${esc(sec.title)} ${ic('chev')}</summary><a href="#${sec.route}"><b>Обзор раздела</b></a>${sec.items.map(it => `<a${aAttrs(linkOf(it))}>${esc(it.title)}</a>`).join('')}</details>` : `<details><summary><a href="#${sec.route}" style="padding:0">${esc(sec.title)}</a></summary></details>`).join('')}
       <div style="margin-top:16px;display:grid;gap:8px">${s.phones.map(p => `<a href="tel:${p.number.replace(/[^\d+]/g, '')}">${ic('phone')} ${esc(p.number)} <small class="muted">${esc(p.label)}</small></a>`).join('')}</div>`;
     $('#footer').innerHTML = `<div class="container">${brandPattern(26, 1, 11, { gap: 10 })}<div class="footer__grid">
-      <div><a class="logo" href="#/" style="color:#fff"><span class="logo__mark"><img src="${esc(s.logo || 'https://ct.mtuci.ru/upload/logo.svg')}" alt=""></span><span class="logo__text">${esc(s.shortName)}<small style="color:#bdb7dc">Колледж телекоммуникаций</small></span></a>
+      <div><a class="logo logo--light" href="#/" aria-label="${esc(s.name)} — на главную">${logoLockup()}</a>
         <p style="margin-top:18px;font-size:.9rem">${esc(s.address)}</p>
         ${s.admission && s.admission.enabled !== false && s.admission.address ? `<p style="font-size:.9rem;margin-top:-6px"><b style="color:#fff">${esc(s.admission.title || 'Приёмная комиссия')}</b>${s.admission.note ? ` (${esc(s.admission.note.toLowerCase())})` : ''}: ${esc(s.admission.address)}<br>${(s.admission.phones || []).map(p => `<a href="tel:${p.replace(/[^\d+]/g, '')}">${esc(p)}</a>`).join(', ')}${s.admission.email ? ` · <a href="mailto:${esc(s.admission.email)}">${esc(s.admission.email)}</a>` : ''}</p>` : ''}
         ${s.phones.map(p => `<div><a href="tel:${p.number.replace(/[^\d+]/g, '')}">${esc(p.number)}</a> — ${esc(p.label)}</div>`).join('')}
@@ -246,7 +299,7 @@
           <div class="hero__stats">${stats.map(x => `<div><b data-count="${esc(x.value)}">${esc(x.value)}</b><span>${esc(x.label)}</span></div>`).join('')}</div>
         </div>
         <div class="hero__art reveal reveal-d2">
-          ${brandPattern(5, 5, 7, { spin: 3 })}
+          ${brandHeroArt()}
           ${h.slides.length ? `<div class="hero__slide" id="heroSlide"></div>` : ''}
         </div>
       </div>
@@ -269,9 +322,10 @@
     </div></section>
 
     <section class="section"><div class="container">
-      <div class="cta-band reveal">${brandPattern(4, 3, 5, { spin: 2 })}
-        <div><span class="eyebrow" style="color:#a5f3fc">Новое</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на 6 коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего.</p></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;position:relative"><a class="btn btn-white" href="#/quiz/">${ic('quiz')} Пройти тест</a><button class="btn btn-light" data-ai-open>${ic('spark')} Спросить помощника</button></div>
+      <div class="cta-band reveal">
+        <div class="cta-band__text"><span class="eyebrow">Новое</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на 6 коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего.</p>
+          <div class="cta-band__btns"><a class="btn btn-white" href="#/quiz/">${ic('quiz')} Пройти тест</a><button class="btn btn-light" data-ai-open>${ic('spark')} Спросить помощника</button></div></div>
+        <div class="cta-band__art">${brandWave(4, 3, 5, { ox: -1, oy: 1 })}</div>
       </div>
     </div></section>
 
@@ -571,12 +625,30 @@
   function enhanceProse() {
     $$('.prose a[href]').forEach(a => {
       const href = a.getAttribute('href');
+      // значок-документ со старого сайта (огромный SVG без размеров) заменяем компактной карточкой
+      a.querySelectorAll('img[src*="icon-document"], img[src*="/assets/img/svg/"]').forEach(i => i.remove());
+      if (!a.querySelector('img') && /\/upload\/iblock\//.test(href) && !/\.(jpe?g|png|gif|webp|jfif|svg)(\?|$)/i.test(href) && !a.classList.contains('doc')) {
+        if (!/\.\w{2,5}(\?|$)/.test(href)) a.setAttribute('data-ext', 'file');
+      }
       const m = href.match(/\.(pdf|docx?|xlsx?|pptx?|zip|rar|rtf|odt)(\?|$)/i);
       if (m && !a.querySelector('img') && !a.classList.contains('doc')) {
         const ext = m[1].toLowerCase(); const cls = ext === 'pdf' ? '' : ext.startsWith('doc') || ext === 'rtf' || ext === 'odt' ? 'doc-word' : ext.startsWith('xls') ? 'doc-xls' : 'doc-other';
         a.classList.add('doc'); a.setAttribute('target', '_blank');
         a.innerHTML = `<span class="badge ${cls}">${ext.toUpperCase()}</span><span>${a.innerHTML}</span>${ic('download', 'dl')}`;
       }
+    });
+    // несколько документов подряд — компактная сетка (проще листать до нужного файла)
+    $$('.prose').forEach(pr => {
+      const parents = new Set($$('a.doc', pr).map(a => a.parentElement));
+      parents.forEach(p => { if (p && p.querySelectorAll(':scope > a.doc').length >= 2) p.classList.add('doc-grid'); });
+      // документы, каждый в своём абзаце/строке — объединяем соседние в одну сетку
+      $$('a.doc', pr).forEach(a => {
+        const wrap = a.parentElement;
+        if (!wrap || !/^(P|DIV)$/.test(wrap.tagName) || wrap.classList.contains('doc-grid') || wrap === pr || wrap.children.length !== 1 || wrap.textContent.trim() !== a.textContent.trim()) return;
+        const prev = wrap.previousElementSibling;
+        if (prev && prev.classList.contains('doc-grid') && prev.dataset.auto) { prev.appendChild(a); wrap.remove(); }
+        else { const g = document.createElement('div'); g.className = 'doc-grid'; g.dataset.auto = '1'; wrap.replaceWith(g); g.appendChild(a); }
+      });
     });
     $$('.prose a').forEach(a => { if (/\.(jpe?g|png|gif|webp|jfif)(\?|$)/i.test(a.getAttribute('href') || '')) a.dataset.lb = '1'; });
     $$('.prose img').forEach(img => { if (!img.closest('a')) img.style.cursor = 'zoom-in'; });
