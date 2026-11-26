@@ -7,7 +7,7 @@
 
 :root{
   --brand:#372579; --brand-2:#372579; --brand-3:#5b4a9e; --accent:#372579; --accent-2:#c9c1ea;
-  --brand-tint:#efecf7; --brand-tint-2:#ddd7ee;
+  --brand-tint:#efecf7; --brand-tint-2:#ddd7ee; --brand-fill:#372579;
   --ink:#151515; --text:#2a2a2e; --muted:#6c6a75; --line:#e4e1ee; --line-2:#cfc9e2;
   --bg:#ffffff; --bg-soft:#f5f3fa; --surface:#ffffff; --surface-2:#f8f7fb;
   --ok:#2f7d4f; --warn:#b26a00; --danger:#c62f3b;
@@ -23,7 +23,7 @@
 html[data-theme="dark"]{
   --ink:#f4f3f8; --text:#d9d7e2; --muted:#9a97a8; --line:#2b2a31; --line-2:#3a3843;
   --bg:#151515; --bg-soft:#1b1b1f; --surface:#1f1f24; --surface-2:#25252b;
-  --brand:#a497e0; --brand-2:#a497e0; --brand-3:#bdb3ea; --accent:#a497e0; --brand-tint:#2a2540; --brand-tint-2:#352e52;
+  --brand:#a497e0; --brand-2:#a497e0; --brand-3:#bdb3ea; --accent:#a497e0; --brand-tint:#2a2540; --brand-tint-2:#352e52; --brand-fill:#4a3a96;
   --grad:#372579; --grad-soft:#26223a;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); --shadow-lg:0 24px 60px rgba(0,0,0,.45);
   color-scheme:dark;
@@ -51,7 +51,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .container{width:100%;max-width:var(--container);margin:0 auto;padding:0 24px}
 .muted{color:var(--muted)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.skip{position:absolute;left:-999px;top:8px;z-index:999;background:var(--brand);color:#fff;padding:8px 16px;border-radius:8px}
+.skip{position:absolute;left:-999px;top:8px;z-index:999;background:var(--brand-fill);color:#fff;padding:8px 16px;border-radius:8px}
 .skip:focus{left:8px}
 .icon{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
@@ -68,11 +68,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .input:focus,.textarea:focus,.select:focus{outline:0;border-color:var(--brand-3);box-shadow:0 0 0 4px rgba(109,76,240,.15)}
 .textarea{min-height:120px;resize:vertical}
 .chip{display:inline-flex;align-items:center;gap:.4em;padding:.45em .95em;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:.86rem;font-weight:600;color:var(--text);transition:all .2s var(--ease)}
-.chip:hover,.chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.chip:hover,.chip.active{background:var(--brand-fill);color:#fff;border-color:var(--brand)}
 .tag{display:inline-block;font-size:.75rem;font-weight:700;color:var(--brand-2);background:var(--grad-soft);padding:.25em .7em;border-radius:999px}
 
 /* ---------- верхняя полоса ---------- */
-.topbar{background:var(--brand);color:#e9e5ff;font-size:.85rem}
+.topbar{background:var(--brand-fill);color:#e9e5ff;font-size:.85rem}
 html[data-theme="dark"] .topbar{background:#0a0816}
 .topbar .container{display:flex;align-items:center;gap:20px;min-height:40px}
 .topbar a,.topbar button{color:#e9e5ff;background:none;border:0;display:inline-flex;align-items:center;gap:6px;padding:0}
@@ -409,7 +409,7 @@ html[data-theme="dark"] .topbar{background:#0a0816}
 .ai-msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg-soft)}
 .msg{max-width:88%;padding:11px 14px;border-radius:16px;font-size:.92rem;line-height:1.5;animation:popIn .3s var(--ease)}
 .msg.bot{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px;align-self:flex-start}
-.msg.me{background:var(--brand-2);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg.me{background:var(--brand-fill);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
 .msg .srcs{display:grid;gap:6px;margin-top:10px}
 .msg .srcs a{display:block;padding:8px 10px;border-radius:10px;background:var(--bg-soft);font-size:.82rem;font-weight:700;color:var(--brand-2);line-height:1.3}
 .msg .srcs a small{display:block;font-weight:500;color:var(--muted);margin-top:2px}
@@ -508,8 +508,8 @@ a:hover{color:var(--brand-3)}
 
 /* кнопки — как в брендбуке: «таблетки» с фиолетовой обводкой */
 .btn{border:1.5px solid var(--brand);color:var(--brand);background:transparent;font-weight:600;letter-spacing:.01em}
-.btn:hover{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:none;transform:translateY(-1px)}
-.btn-primary{background:var(--brand);color:#fff;box-shadow:none;border:1.5px solid var(--brand)}
+.btn:hover{background:var(--brand-fill);color:#fff;border-color:var(--brand);box-shadow:none;transform:translateY(-1px)}
+.btn-primary{background:var(--brand-fill);color:#fff;box-shadow:none;border:1.5px solid var(--brand)}
 .btn-primary:hover{background:#2a1c5e;border-color:#2a1c5e;color:#fff;box-shadow:0 8px 20px rgba(55,37,121,.25)}
 html[data-theme="dark"] .btn{border-color:var(--brand-3);color:var(--ink)}
 html[data-theme="dark"] .btn-primary{background:#372579;border-color:#5b4a9e;color:#fff}
@@ -518,7 +518,7 @@ html[data-theme="dark"] .btn-primary{background:#372579;border-color:#5b4a9e;col
 .btn-white{background:#fff;color:#372579;border:1.5px solid #fff}
 .btn-white:hover{background:transparent;color:#fff;border-color:#fff}
 .chip{font-weight:600}
-.chip:hover,.chip.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip:hover,.chip.active{background:var(--brand-fill);border-color:var(--brand);color:#fff}
 .tag{background:var(--brand-tint);color:var(--brand)}
 
 /* шапка */
@@ -651,7 +651,7 @@ html[data-theme="dark"] .btn-primary{background:#372579;border-color:#5b4a9e;col
 .msg-img{border-radius:10px;margin-bottom:8px;width:100%;max-height:220px;object-fit:cover;cursor:zoom-in}
 .msg-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .msg-btns .mb{border:1.5px solid var(--brand);background:var(--surface);color:var(--brand);border-radius:999px;padding:6px 12px;font:600 .8rem var(--font);text-decoration:none;line-height:1.2;text-align:left;transition:background .15s,color .15s}
-.msg-btns .mb:hover{background:var(--brand);color:#fff}
+.msg-btns .mb:hover{background:var(--brand-fill);color:#fff}
 html[data-theme="dark"] .msg-btns .mb{border-color:var(--brand-3);color:var(--ink)}
 .msg a{color:var(--brand);text-decoration:underline;text-underline-offset:2px;word-break:break-word}
 .msg.me a{color:#fff}
@@ -685,3 +685,125 @@ html[data-theme="dark"] .msg-btns .mb{border-color:var(--brand-3);color:var(--in
 .adm-card__grid a:hover{color:#c9c1ea}
 .btn:disabled{opacity:.4;pointer-events:none}
 .demo-bar{background:#ffd84d;color:#151515;text-align:center;font-size:.85rem;font-weight:600;padding:8px 16px}.demo-bar a{color:#151515;text-decoration:underline}
+/* ---------- мозаика первого экрана с логотипом: бесшовная анимация ---------- */
+.bp-hero{max-width:540px;margin-left:auto;overflow:visible}
+.bp-hero .cell{transform-box:fill-box;transform-origin:center;will-change:transform;
+  animation:cellTurn 16s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes cellTurn{
+  0%,12%{transform:rotate(0)}
+  25%,37%{transform:rotate(90deg)}
+  50%,62%{transform:rotate(180deg)}
+  75%,87%{transform:rotate(270deg)}
+  100%{transform:rotate(360deg)}}
+.bp-hero .t{fill:#fff}
+.bp-hero .t.alt{fill:#8f80d6;animation:bpIn .7s var(--ease) forwards,altBreath 7s ease-in-out infinite}
+@keyframes altBreath{0%,100%{fill:#8f80d6}50%{fill:#c9c1ea}}
+.bp-hero .rings circle{fill:none;stroke:#fff;stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0;
+  animation:ring 6s cubic-bezier(.25,.6,.3,1) infinite}
+@keyframes ring{0%{transform:scale(.55);opacity:0}15%{opacity:.35}100%{transform:scale(2.4);opacity:0}}
+.bp-hero .logo-card rect{fill:#fff}
+.bp-hero .logo-card{transform-box:fill-box;transform-origin:center;animation:cardIn .9s var(--ease) .2s both,cardGlow 6s ease-in-out 1s infinite}
+@keyframes cardIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes cardGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}50%{filter:drop-shadow(0 0 18px rgba(255,255,255,.45))}}
+.hero__art .bp-hero{--bp-fg:#fff}
+@media (prefers-reduced-motion:reduce){.bp-hero .cell,.bp-hero .rings circle,.bp-hero .logo-card,.bp-hero .t.alt{animation:none!important}.bp-hero .rings{display:none}}
+@media (max-width:1100px){.hero .container{grid-template-columns:1fr;gap:36px}.bp-hero{margin:0 auto}}
+@media (max-width:760px){.hero .container{padding-top:40px;padding-bottom:48px}.hero__art{max-width:420px;margin:0 auto}}
+/* ---------- компактные карточки документов ---------- */
+.prose a > img[src$=".svg"]{width:36px;height:36px;margin:0;display:inline-block}
+.prose a.doc{padding:8px 12px;margin:4px 0;gap:10px;border-radius:12px;font-size:.9rem;font-weight:600;min-width:0}
+.prose a.doc > span:nth-child(2){min-width:0;overflow-wrap:anywhere}
+.prose a.doc .badge{width:36px;height:36px;border-radius:8px;font-size:.62rem}
+.prose a.doc .dl{width:16px;height:16px;flex:none}
+.prose a.doc:hover{transform:none;box-shadow:var(--shadow)}
+.prose .doc-grid,.prose ul:has(>li>a.doc){display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 10px;margin:.6em 0 1.2em;padding:0;list-style:none}
+.prose .doc-grid > a.doc,.prose ul:has(>li>a.doc) > li > a.doc{margin:0;height:100%}
+.prose ul:has(>li>a.doc) > li{margin:0}
+/* ---------- навигация: текст не выходит за форму ---------- */
+.tabs{border-radius:18px;padding:6px}
+.tabs button{border-radius:12px;line-height:1.25;text-align:left;max-width:100%}
+.seg,.mode-switch{border-radius:16px;flex-wrap:wrap;max-width:100%}
+.seg button,.mode-switch button{border-radius:12px;line-height:1.25}
+.msg-btns .mb{border-radius:12px;max-width:100%}
+.chip,.hero__chips button{border-radius:12px;line-height:1.25;text-align:left}
+.side a{overflow-wrap:anywhere}
+.mega a span{min-width:0;overflow-wrap:anywhere}
+.spec-card h3,.news-card h3,.aud__card li a{overflow-wrap:anywhere;hyphens:auto}
+.hero__art{justify-self:center;width:100%}
+@media (max-width:760px){.prose .doc-grid,.prose ul:has(>li>a.doc){grid-template-columns:1fr}.tabs{border-radius:14px}}
+.news-layout > *,.page-layout > *,.contact-grid > *{min-width:0}
+@media (max-width:760px){
+  .tabs{flex-wrap:wrap;overflow:visible;position:static}
+  .tabs button{white-space:normal;max-width:none;flex:1 1 auto;text-align:center}
+}
+/* ---------- волна поворотов для любой мозаики (.bp-wave) ---------- */
+.bp-wave{overflow:visible}
+.bp-wave .cell{transform-box:fill-box;transform-origin:center;will-change:transform;animation:cellTurn 16s cubic-bezier(.65,0,.35,1) infinite}
+.bp-wave .t.alt{animation:bpIn .7s var(--ease) forwards,altBreath 7s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.bp-wave .cell,.bp-wave .t.alt{animation:none!important}}
+
+/* ---------- блок «Не знаете, какую специальность выбрать?»: мозаика в своей колонке ---------- */
+.cta-band{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,34%);gap:40px;align-items:center;padding:44px}
+.cta-band__text{position:relative;z-index:1;min-width:0}
+.cta-band__text .eyebrow{color:#c9c1ea!important}
+.cta-band__text h2{color:#fff}
+.cta-band__text p{color:rgba(255,255,255,.86);max-width:560px}
+.cta-band__btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.cta-band .cta-band__art{position:relative;display:block;width:100%;max-width:360px;justify-self:end}
+.cta-band .cta-band__art .bp{position:static;width:100%;height:auto;opacity:1;--bp-fg:#fff}
+.cta-band .bp-wave .t{fill:#fff}
+.cta-band .bp-wave .t.alt{fill:#8f80d6}
+@media (max-width:900px){.cta-band{grid-template-columns:1fr;gap:24px;padding:28px}.cta-band .cta-band__art{order:-1;max-width:240px;justify-self:start}}
+
+/* ---------- кнопки на фиолетовом фоне: одинаково читаемы в светлой и тёмной теме ---------- */
+.btn.btn-white,html[data-theme="dark"] .btn.btn-white{background:#fff;color:#372579;border-color:#fff}
+.btn.btn-white:hover,html[data-theme="dark"] .btn.btn-white:hover{background:#ece8f8;color:#2a1c5e;border-color:#ece8f8}
+.btn.btn-light,html[data-theme="dark"] .btn.btn-light{background:transparent;color:#fff;border-color:rgba(255,255,255,.75)}
+.btn.btn-light:hover,html[data-theme="dark"] .btn.btn-light:hover{background:#fff;color:#372579;border-color:#fff}
+html[data-theme="dark"] .btn-primary,html[data-theme="dark"] .btn-primary:hover{color:#fff}
+
+/* ---------- кнопка «Спросить» в строке поиска: значок не наезжает на текст ---------- */
+.hero__search > .icon{position:absolute;left:18px;top:50%;transform:translateY(-50%)}
+.hero__search .btn .icon{position:static;transform:none;width:18px;height:18px;color:inherit}
+.hero__search .btn,html[data-theme="dark"] .hero__search .btn{background:#372579;color:#fff;border-color:#372579}
+.hero__search .btn:hover{background:#2a1c5e;border-color:#2a1c5e;color:#fff}
+.hero__search input,html[data-theme="dark"] .hero__search input{background:#fff;color:#151515}
+/* ---------- читаемость: значки файлов (контраст белого текста ≥ 4.5:1) ---------- */
+.prose a.doc .badge{background:#b42333}
+.prose a.doc .badge.doc-word{background:#1f5bb8}
+.prose a.doc .badge.doc-xls{background:#16733a}
+.prose a.doc .badge.doc-other{background:#55525f}
+
+/* ---------- мозаики никогда не заходят под текст ---------- */
+.page-hero .bp{max-width:34%}
+.page-hero .container > *{max-width:calc(66% - 24px)}
+.spec-hero .bp{max-width:36%;opacity:.35}
+.spec-hero .container > :not(.facts){max-width:calc(64% - 24px)}
+.aud__card .bp{width:96px}
+.aud__card h3,.aud__card > p{padding-right:96px}
+@media (max-width:760px){
+  .page-hero .bp,.spec-hero .bp{display:none}
+  .page-hero .container > *,.spec-hero .container > :not(.facts){max-width:none}
+  .aud__card .bp{width:72px}.aud__card h3,.aud__card > p{padding-right:72px}
+}
+/* заливки фирменным цветом с белым текстом: в тёмной теме — насыщенный фиолетовый */
+html[data-theme="dark"] .btn:hover{background:var(--brand-fill);border-color:var(--brand-fill);color:#fff}
+html[data-theme="dark"] .msg-btns .mb:hover{background:var(--brand-fill);color:#fff;border-color:var(--brand-fill)}
+html[data-theme="dark"] .chip:hover,html[data-theme="dark"] .chip.active{background:var(--brand-fill);border-color:var(--brand-fill);color:#fff}
+.skip{background:#372579;color:#fff}
+.cta-band .cta-band__art{border:0;box-shadow:none;border-radius:0;height:auto;top:auto;right:auto}
+/* ---------- логотип: фирменный семиугольник + подпись ---------- */
+.logo{gap:12px;color:var(--ink)}
+.logo__mark{width:46px;height:46px;border-radius:12px;background:#372579;display:grid;place-items:center;flex:none;box-shadow:none;transition:transform .5s var(--ease)}
+.logo__mark .hepta{width:30px;height:30px;overflow:visible}
+.logo__mark .hepta polygon{fill:none;stroke:#fff;stroke-width:11;stroke-linejoin:round;transform-origin:50px 50px;transition:transform .7s var(--ease)}
+.logo:hover .logo__mark .hepta polygon{transform:rotate(51.43deg)}
+.logo__text{display:flex;flex-direction:column;justify-content:center;line-height:1;white-space:nowrap}
+.logo__text b{font-size:1.32rem;font-weight:800;letter-spacing:.06em;color:var(--brand)}
+html[data-theme="dark"] .logo__text b{color:var(--ink)}
+.logo__text small{display:block;margin-top:4px;font-size:.6rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;line-height:1.25;color:var(--muted)}
+.logo--light .logo__text b{color:#fff}
+.logo--light .logo__text small{color:#bdb7dc}
+.logo--light .logo__mark{background:transparent;border:1.5px solid rgba(255,255,255,.35)}
+@media (max-width:760px){.logo__text small{display:block}.logo__text b{font-size:1.15rem}}
+@media (prefers-reduced-motion:reduce){.logo:hover .logo__mark .hepta polygon{transform:none}}
