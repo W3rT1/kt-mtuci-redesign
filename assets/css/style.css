@@ -952,3 +952,10 @@ html[data-theme="dark"] .loader .hepta polygon{stroke:#a497e0}
 .prose > .img-fallback,.prose p > .img-fallback{max-width:420px;margin:1em 0;border-radius:var(--radius-sm)}
 .msg .img-fallback{min-height:90px;border-radius:10px}
 html[data-theme="dark"] .img-fallback{color:var(--brand-3)}
+/* меню городов: без зазора между кнопкой и списком, открытие по нажатию */
+.topbar .dd-menu{top:calc(100% + 8px)}
+.topbar .dd-menu::before{content:"";position:absolute;left:0;right:0;top:-12px;height:12px}
+.topbar .dd.open .dd-menu{opacity:1;visibility:visible;transform:none}
+.topbar .dd-menu a{white-space:nowrap}
+.topbar .dd button[aria-expanded="true"] .icon:last-child{transform:rotate(180deg)}
+.topbar .dd button .icon:last-child{transition:transform .2s}
