@@ -216,7 +216,7 @@
       <a class="hide-m" href="mailto:${esc(s.email)}">${ic('mail')} ${esc(s.email)}</a>
       <span class="grow"></span>
       <button id="a11yBtn" title="Версия для слабовидящих">${ic('eye')} <span class="hide-m">Версия для слабовидящих</span></button>
-      <a${aAttrs(s.lkUrl)} title="Личный кабинет">${ic('user')} <span class="hide-m">Личный кабинет</span></a>
+      ${s.lkUrl ? `<a${aAttrs(s.lkUrl)} title="Личный кабинет">${ic('user')} <span class="hide-m">Личный кабинет</span></a>` : ''}
     </div>`;
     $('#header').innerHTML = `<div class="container">
       <a class="logo" href="#/" aria-label="${esc(s.name)} — на главную">${logoLockup()}</a>
@@ -267,6 +267,14 @@
     $('#searchBtn').onclick = () => openSearch();
     $('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
     $('#a11yBtn').onclick = () => $('#a11y').classList.toggle('open');
+    // меню городов (филиалы): открывается по нажатию — удобно и на телефоне; закрывается кликом мимо и Esc
+    $$('.topbar .dd').forEach(dd => {
+      const btn = $('button', dd);
+      btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false');
+      btn.onclick = e => { e.stopPropagation(); const o = dd.classList.toggle('open'); btn.setAttribute('aria-expanded', o); };
+    });
+    document.addEventListener('click', e => { if (!e.target.closest('.topbar .dd')) $$('.topbar .dd.open').forEach(d => { d.classList.remove('open'); $('button', d).setAttribute('aria-expanded', 'false'); }); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.topbar .dd.open').forEach(d => d.classList.remove('open')); });
     if (!localStorage.getItem('cookieOk')) $('#cookie').classList.add('show');
     $('#cookieOk').onclick = () => { localStorage.setItem('cookieOk', '1'); $('#cookie').classList.remove('show'); };
     const header = $('#header'), toTop = $('#toTop'), bar = $('#progress');
