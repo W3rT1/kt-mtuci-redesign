@@ -35,7 +35,7 @@
     const known = Object.keys(df);
     const wt = t => { if (df[t]) return Math.log(1 + N / df[t]); const k = known.find(x => same(x, t)); return k ? Math.log(1 + N / df[k]) : Math.log(1 + N); };
     const memo = {};
-    const ix = { items, w: t => (memo[t] ??= wt(t)), sig: sig(intents) };
+    const ix = { items, w: t => (t in memo ? memo[t] : (memo[t] = wt(t))), sig: sig(intents) };
     cache.set(intents, ix); return ix;
   }
   const sig = intents => intents.length + ':' + intents.reduce((s, i) => s + (i.phrases || []).length + (i.disabled ? 1 : 0) + (i.title || '').length, 0);
