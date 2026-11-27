@@ -6,7 +6,7 @@
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const app = $('#app');
   let D = null;           // данные сайта
   let IDX = [];           // поисковый индекс
@@ -51,7 +51,7 @@
   function brandPattern(cols, rows, seed = 1, opt = {}) {
     let s = seed * 9301 + 49297;
     const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
-    const T = 100, G = opt.gap ?? 8, W = cols * T + (cols - 1) * G, H = rows * T + (rows - 1) * G;
+    const T = 100, G = (opt.gap == null ? 8 : opt.gap), W = cols * T + (cols - 1) * G, H = rows * T + (rows - 1) * G;
     const shapes = [
       ['M0 0H100A100 100 0 0 1 0 100Z', 5],         // четверть круга
       ['M0 0H50A50 50 0 0 1 50 100H0Z', 4],          // «D» — полукруг на прямоугольнике
@@ -73,6 +73,67 @@
     }
     return `<svg class="bp" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">${out}</svg>`;
   }
+  // ---------------- тематические анимации (связь, сети, IT) ----------------
+  // Анимированные иконки специальностей: каждая показывает суть профессии.
+  const SA = (cls, body) => `<svg class="sa ${cls}" viewBox="0 0 48 48" aria-hidden="true">${body}</svg>`;
+  const mv = (path, dur, begin) => `<circle class="sa-pk" r="2.2"><animateMotion dur="${dur}s" begin="${begin}s" repeatCount="indefinite" path="${path}"/></circle>`;
+  const SPEC_ANIM = {
+    // сетевое администрирование: пакеты бегут по связям между узлами
+    '09.02.06': () => SA('sa-net', `<path class="sa-ln" d="M24 22V12M20.5 27.5 11 34M27.5 27.5 37 34"/>
+      <circle class="sa-node n1" cx="24" cy="8" r="4"/><circle class="sa-node n2" cx="8" cy="37" r="4"/><circle class="sa-node n3" cx="40" cy="37" r="4"/><circle class="sa-hub" cx="24" cy="25.5" r="4.6"/>
+      ${mv('M24 21V12', 1.6, 0)}${mv('M20.5 28 11 34.5', 1.6, .5)}${mv('M27.5 28 37 34.5', 1.6, 1)}`),
+    // разработка ПО: </> и печатающийся слэш
+    '09.02.11': () => SA('sa-code', `<path class="sa-l" d="M15 15 6 24l9 9"/><path class="sa-r" d="M33 15l9 9-9 9"/><path class="sa-slash" d="M27.5 12 20.5 36"/>`),
+    // ИИ: нейросеть загорается слой за слоем
+    '09.02.13': () => SA('sa-ai', `<path class="sa-ln" d="M10 16 24 10M10 16 24 24M10 16 24 38M10 32 24 10M10 32 24 24M10 32 24 38M24 10 38 18M24 24 38 18M24 38 38 18M24 10 38 30M24 24 38 30M24 38 38 30"/>
+      <circle class="sa-n l1" cx="10" cy="16" r="3.4"/><circle class="sa-n l1" cx="10" cy="32" r="3.4"/><circle class="sa-n l2" cx="24" cy="10" r="3.4"/><circle class="sa-n l2" cx="24" cy="24" r="3.4"/><circle class="sa-n l2" cx="24" cy="38" r="3.4"/><circle class="sa-n l3" cx="38" cy="18" r="3.4"/><circle class="sa-n l3" cx="38" cy="30" r="3.4"/>`),
+    // информационная безопасность: щит, сканирующий луч и галочка
+    '10.02.04': () => SA('sa-sec', `<defs><clipPath id="saShield"><path d="M24 5 9 11v11c0 10 6.5 17 15 21 8.5-4 15-11 15-21V11z"/></clipPath></defs>
+      <path class="sa-sh" d="M24 5 9 11v11c0 10 6.5 17 15 21 8.5-4 15-11 15-21V11z"/><g clip-path="url(#saShield)"><rect class="sa-scan" x="6" y="4" width="36" height="5"/></g><path class="sa-ok" d="m17 24 5 5 9-10"/>`),
+    // инфокоммуникационные сети: дуги сигнала заполняются по очереди
+    '11.02.15': () => SA('sa-wifi', `<path class="sa-a a1" d="M17.5 30.5a9 9 0 0 1 13 0"/><path class="sa-a a2" d="M12 24.5a17 17 0 0 1 24 0"/><path class="sa-a a3" d="M6.5 18.5a25 25 0 0 1 35 0"/><circle class="sa-dot" cx="24" cy="37" r="3"/>`),
+    // радиосвязь и телерадиовещание: мачта излучает волны
+    '11.02.18': () => SA('sa-radio', `<path class="sa-mast" d="M24 20 17 43M24 20l7 23M19.5 35h9M21 28h6"/><circle class="sa-top" cx="24" cy="17" r="3"/>
+      <path class="sa-w w1" d="M16.5 10.5a10 10 0 0 0 0 13M31.5 10.5a10 10 0 0 1 0 13"/><path class="sa-w w2" d="M11 6a17 17 0 0 0 0 22M37 6a17 17 0 0 1 0 22"/>`),
+    // экономика и бухучёт: растущие столбцы
+    '38.02.01': () => SA('sa-chart', `<path class="sa-ax" d="M6 42h36M6 42V6"/><rect class="sa-bar b1" x="11" y="26" width="7" height="16" rx="1.5"/><rect class="sa-bar b2" x="21" y="18" width="7" height="24" rx="1.5"/><rect class="sa-bar b3" x="31" y="10" width="7" height="32" rx="1.5"/>`),
+    // реклама: громкоговоритель и звуковые волны
+    '42.02.01': () => SA('sa-ad', `<path class="sa-mega" d="M7 20v8h6l13 8V12l-13 8z"/><path class="sa-s s1" d="M31 19.5a6 6 0 0 1 0 9"/><path class="sa-s s2" d="M35.5 15a12 12 0 0 1 0 18"/><path class="sa-s s3" d="M40 10.5a18 18 0 0 1 0 27"/>`),
+  };
+  const specAnim = code => (SPEC_ANIM[code] ? SPEC_ANIM[code]() : ic(specIcon(code)));
+
+  // «Сетевой трафик» для мозаики первого экрана: пакеты бегут по зазорам между плитками от логотипа к краям
+  function heroPackets() {
+    const C = [104, 212, 320, 428], E = 532, mid = 266;
+    const routes = [
+      `M104 ${mid}V0`, `M104 ${mid}V${E}`, `M428 ${mid}V0`, `M428 ${mid}V${E}`,
+      `M212 212V0`, `M320 212V0`, `M212 320V${E}`, `M320 320V${E}`,
+      `M${mid} 212H0`, `M${mid} 212H${E}`, `M${mid} 320H0`, `M${mid} 320H${E}`,
+    ];
+    return `<g class="packets">${routes.map((d, i) => {
+      const dur = (2.6 + (i % 4) * 0.35).toFixed(2), begin = (i * 0.45).toFixed(2);
+      return `<g><rect class="pk${i % 3 === 0 ? ' pk-alt' : ''}" x="-8" y="-2.5" width="16" height="5" rx="2.5" opacity="0"><animateMotion dur="${dur}s" begin="${begin}s" repeatCount="indefinite" rotate="auto" path="${d}"/><animate attributeName="opacity" dur="${dur}s" begin="${begin}s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.12;.78;1"/></rect></g>`;
+    }).join('')}</g>`;
+  }
+
+  // «Радиосигнал» внизу первого экрана: бесшовно бегущие синусоиды
+  function signalWaves() {
+    const wave = (amp, len, y) => { let d = `M0 ${y}`; for (let x = 0; x < 2400; x += len) d += ` q${len / 4} ${-amp} ${len / 2} 0 t${len / 2} 0`; return d; };
+    return `<div class="signal" aria-hidden="true"><svg viewBox="0 0 2400 60" preserveAspectRatio="none">
+      <path class="sg sg1" d="${wave(16, 300, 30)}"/><path class="sg sg2" d="${wave(10, 200, 34)}"/><path class="sg sg3" d="${wave(6, 120, 28)}"/></svg></div>`;
+  }
+
+  // Пауза анимаций вне экрана (экономия батареи на телефонах)
+  let animObs;
+  function watchAnimations() {
+    if (!('IntersectionObserver' in window)) return;
+    if (!animObs) animObs = new IntersectionObserver(es => es.forEach(e => {
+      e.target.classList.toggle('anim-off', !e.isIntersecting);
+      e.target.querySelectorAll('svg').forEach(s => { if (s.pauseAnimations) { try { e.isIntersecting ? s.unpauseAnimations() : s.pauseAnimations(); } catch (_) {} } });
+    }), { rootMargin: '80px' });
+    $$('.hero, .cta-band, .spec-card, .spec-hero, .aud__card').forEach(el => animObs.observe(el));
+  }
+
   // Мозаика первого экрана: логотип колледжа в центре, плитки вокруг поворачиваются
   // волной от логотипа к краям (как сигнал от передатчика). Цикл бесшовный:
   // 4 поворота по 90° = полный оборот, плитка возвращается в исходное положение.
@@ -81,8 +142,8 @@
   function brandWave(cols, rows, seed = 5, opt = {}) {
     let s = seed * 9301 + 49297;
     const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
-    const T = 100, G = opt.gap ?? 8, W = cols * T + (cols - 1) * G, H = rows * T + (rows - 1) * G;
-    const ox = opt.ox ?? -1, oy = opt.oy ?? (rows - 1) / 2;
+    const T = 100, G = (opt.gap == null ? 8 : opt.gap), W = cols * T + (cols - 1) * G, H = rows * T + (rows - 1) * G;
+    const ox = (opt.ox == null ? -1 : opt.ox), oy = (opt.oy == null ? (rows - 1) / 2 : opt.oy);
     const shapes = [['M0 0H100A100 100 0 0 1 0 100Z', 6], ['M0 0H50A50 50 0 0 1 50 100H0Z', 4], ['M0 0H100V100Z', 3], ['M50 0A50 50 0 1 1 50 100A50 50 0 1 1 50 0Z', 2], ['M0 0H100V50H0Z', 2], ['', 2]];
     const total = shapes.reduce((a, x) => a + x[1], 0);
     const pick = () => { let r = rnd() * total; for (const sh of shapes) if ((r -= sh[1]) < 0) return sh[0]; return shapes[0][0]; };
@@ -112,13 +173,17 @@
       cells += `<g transform="translate(${x * (T + G)} ${y * (T + G)})"><g class="cell" style="animation-delay:${delay}s"><rect width="100" height="100" fill="none"/><g transform="rotate(${rot} 50 50)"><path class="t${alt ? ' alt' : ''}" style="animation-delay:${((x + y) * 0.06).toFixed(2)}s${alt ? `,${(rnd() * 6).toFixed(1)}s` : ''}" d="${d}"/></g></g></g>`;
     }
     const lx = T + G, ly = LOGO_ROW * (T + G), lw = 3 * T + 2 * G, cx = lx + lw / 2, cy = ly + T / 2;
-    const logo = esc(D.site.logo || 'https://ct.mtuci.ru/upload/logo.svg');
+    // логотип рисуется прямо в SVG (фирменный семиугольник + подпись) — не зависит от внешнего сайта
+    const hx = lx + 22, hy = ly + 18, hs = 64;
+    const hepta = HEPTA.split(' ').map(p => { const [x, y] = p.split(',').map(Number); return `${(hx + x * hs / 100).toFixed(1)},${(hy + y * hs / 100).toFixed(1)}`; }).join(' ');
     return `<svg class="bp bp-hero" viewBox="0 0 ${W} ${W}" aria-label="${esc(D.site.name)}" role="img">
-      <defs><filter id="toBrand" color-interpolation-filters="sRGB"><feFlood flood-color="#372579"/><feComposite in2="SourceAlpha" operator="in"/></filter></defs>
       <g class="rings">${[0, 1, 2].map(i => `<circle cx="${cx}" cy="${cy}" r="${lw / 2}" style="animation-delay:${i * 2}s"/>`).join('')}</g>
       ${cells}
+      ${heroPackets()}
       <g class="logo-card"><rect x="${lx}" y="${ly}" width="${lw}" height="${T}" rx="18"/>
-        <image href="${logo}" x="${lx + 28}" y="${ly + 16}" width="${lw - 56}" height="${T - 32}" preserveAspectRatio="xMidYMid meet" filter="url(#toBrand)"/></g>
+        <polygon class="lc-hepta" points="${hepta}"/>
+        <text class="lc-name" x="${lx + 104}" y="${ly + 54}" textLength="150" lengthAdjust="spacingAndGlyphs">МТУСИ</text>
+        <text class="lc-sub" x="${lx + 105}" y="${ly + 74}" textLength="186" lengthAdjust="spacingAndGlyphs">КОЛЛЕДЖ ТЕЛЕКОММУНИКАЦИЙ</text></g>
     </svg>`;
   }
   const seedOf = str => [...String(str)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7);
@@ -129,11 +194,12 @@
   const linkOf = it => it.url ? it.url : '#' + it.route;
   const isExt = href => /^https?:/i.test(href);
   const aAttrs = href => isExt(href) ? ` href="${esc(href)}" target="_blank" rel="noopener"` : ` href="${esc(href)}"`;
-  const stripHtml = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.replace(/\s+/g, ' ').trim(); };
+  // текст без разметки; на месте переносов строк и границ блоков ставим пробел, чтобы слова не слипались
+  const stripHtml = h => { const d = document.createElement('div'); d.innerHTML = String(h || '').replace(/<br\s*\/?>/gi, ' ').replace(/<\/(p|div|li|h[1-6]|td|th|tr|dt|dd|blockquote|figcaption)>/gi, ' $&'); return d.textContent.replace(/\s+/g, ' ').trim(); };
   const norm = s => (s || '').toLowerCase().replace(/ё/g, 'е');
   const currentRoute = () => { const h = decodeURIComponent(location.hash.slice(1) || '/'); const [p, q] = h.split('?'); let path = p || '/'; if (!path.endsWith('/') && !/\.\w+$/.test(path)) path += '/'; return { path, query: new URLSearchParams(q || '') }; };
   const sectionOf = route => D.sections.find(s => s.route === route) || D.sections.find(s => s.items.some(i => i.route === route));
-  const factVal = (sp, kw, mode = 0) => { const f = sp.facts.find(f => norm(f.label).includes(kw)); return f ? stripHtml((f.values[mode] ?? f.values[0]) || '') : ''; };
+  const factVal = (sp, kw, mode = 0) => { const f = sp.facts.find(f => norm(f.label).includes(kw)); return f ? stripHtml((f.values[mode] == null ? f.values[0] : f.values[mode]) || '') : ''; };
 
   // Фирменный знак МТУСИ — семиугольник — и подпись в духе официального логотипа:
   // «МТУСИ» крупно, «колледж телекоммуникаций» — дескриптор под ним.
@@ -289,6 +355,7 @@
       <a class="btn" href="#${sec.route}">Весь раздел ${ic('arrow')}</a></article>` : '';
     return `
     <section class="hero">
+      ${signalWaves()}
       <div class="container">
         <div class="reveal">
           <span class="hero__eyebrow"><span class="dot"></span>${esc(h.eyebrow || 'Структурное подразделение МТУСИ')}</span>
@@ -340,7 +407,7 @@
   function specCard(sp, i = 0) {
     const budget = factVal(sp, 'бюджет'), cost = factVal(sp, 'стоимост');
     return `<a class="spec-card reveal reveal-d${i % 3 + 1}" href="#/abitur/specialties/${esc(sp.code)}/">
-      <span class="spec-card__icon">${ic(specIcon(sp.code))}</span>
+      <span class="spec-card__icon">${specAnim(sp.code)}</span>
       <span class="spec-card__code">${esc(sp.code)}</span><h3>${esc(sp.name)}</h3><div class="spec-card__forms">${esc(sp.forms || sp.modes.join(', '))}</div>
       <div class="spec-card__facts"><div><b>${esc(budget || '—')}</b><span>бюджетных мест</span></div><div><b>${esc(cost || '—')}</b><span>за семестр (платно)</span></div></div></a>`;
   }
@@ -469,7 +536,7 @@
   function viewSpecialty(sp) {
     const sec = sectionOf('/abitur/specialties/');
     const hasModes = sp.modes.length > 1 && sp.facts.some(f => f.values.length > 1);
-    return `<header class="spec-hero">${brandPattern(6, 4, seedOf(sp.code))}<div class="container">
+    return `<header class="spec-hero"><div class="spec-hero__ic" aria-hidden="true">${specAnim(sp.code)}</div><div class="container">
         <nav class="crumbs"><a href="#/">Главная</a><span class="sep">/</span><a href="#${sec.route}">${esc(sec.title)}</a><span class="sep">/</span><a href="#/abitur/specialties/">Специальности</a></nav>
         <div class="spec-hero__code">${esc(sp.code)}</div><h1>${esc(sp.name)}</h1>
         ${hasModes ? `<div><small style="opacity:.8">Форма обучения:</small><br><div class="mode-switch" id="modeSwitch">${sp.modes.map((m, i) => `<button data-m="${i}" class="${i ? '' : 'active'}">${esc(m)}</button>`).join('')}</div></div>` : `<p style="opacity:.85">Форма обучения: ${esc(sp.modes.join(', '))}</p>`}
@@ -575,6 +642,7 @@
   function after(path, q) {
     enhanceProse();
     observeReveal();
+    watchAnimations();
     const act = $('.side a.active'); if (act && innerWidth < 760) act.parentElement.scrollLeft = act.offsetLeft - 16;
     if (path === '/') bindHome();
     if (path === '/news/') bindNews(q);
@@ -593,7 +661,7 @@
     $$('#modeSwitch button').forEach(b => b.onclick = () => {
       $$('#modeSwitch button').forEach(x => x.classList.toggle('active', x === b));
       const m = +b.dataset.m;
-      $$('#facts b[data-vals]').forEach(el => { const v = JSON.parse(el.dataset.vals); const nv = v[m] ?? v[0]; if (el.innerHTML !== nv) { el.innerHTML = nv || '—'; el.classList.remove('changed'); void el.offsetWidth; el.classList.add('changed'); } });
+      $$('#facts b[data-vals]').forEach(el => { const v = JSON.parse(el.dataset.vals); const nv = (v[m] == null ? v[0] : v[m]); if (el.innerHTML !== nv) { el.innerHTML = nv || '—'; el.classList.remove('changed'); void el.offsetWidth; el.classList.add('changed'); } });
     });
     $$('[data-apply-for]').forEach(b => b.onclick = () => { const seg = $('#formSeg button[data-f="apply"]'); seg && seg.click(); const ta = $('#feedback textarea'); if (ta) ta.value = 'Хочу поступить на специальность ' + b.dataset.applyFor; $('#contacts').scrollIntoView({ behavior: 'smooth' }); });
     // подсветка найденного (переход из поиска)
@@ -641,6 +709,8 @@
     $$('.prose').forEach(pr => {
       const parents = new Set($$('a.doc', pr).map(a => a.parentElement));
       parents.forEach(p => { if (p && p.querySelectorAll(':scope > a.doc').length >= 2) p.classList.add('doc-grid'); });
+      // списки документов — сетка без опоры на :has() (для старых браузеров)
+      $$('ul', pr).forEach(u => { if (u.querySelector(':scope > li > a.doc')) u.classList.add('doc-grid', 'doc-list'); });
       // документы, каждый в своём абзаце/строке — объединяем соседние в одну сетку
       $$('a.doc', pr).forEach(a => {
         const wrap = a.parentElement;
@@ -677,9 +747,10 @@
     };
     if (card && slides.length) { draw(); timer = setTimeout(() => show(1), 6500); }
     const hs = $('#heroSearch'); hs.onsubmit = e => { e.preventDefault(); const v = hs.q.value.trim(); if (v) openAI(v); };
-    $$('.hero__chips button').forEach(b => b.onclick = () => openSearch(b.dataset.q));
+    // готовые запросы под строкой «Спросите…» отправляются помощнику, как и сама строка
+    $$('.hero__chips button').forEach(b => b.onclick = () => openAI(b.dataset.q));
     // счётчики
-    $$('[data-count]').forEach(el => { const target = parseInt(el.dataset.count); if (!target || String(target) !== el.dataset.count) return; let start = null; const step = t => { start ??= t; const p = Math.min(1, (t - start) / 1200); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); });
+    $$('[data-count]').forEach(el => { const target = parseInt(el.dataset.count); if (!target || String(target) !== el.dataset.count) return; let start = null; const step = t => { if (start === null) start = t; const p = Math.min(1, (t - start) / 1200); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); });
   }
 
   // ---------------- формы ----------------
@@ -779,7 +850,7 @@
     }
     const r = search(q, 24);
     const groups = {};
-    r.forEach(x => (groups[x.d.type] ||= []).push(x));
+    r.forEach(x => { if (!groups[x.d.type]) groups[x.d.type] = []; groups[x.d.type].push(x); });
     const order = Object.keys(groups).sort((a, b) => groups[b][0].score - groups[a][0].score);
     let html = `<div class="sr-ai" data-ai="${esc(q)}"><span class="ic" style="background:var(--grad);color:#fff;width:36px;height:36px;border-radius:10px;display:grid;place-items:center">${ic('spark')}</span><div><b>Спросить ИИ-помощника</b><small class="muted">«${esc(q)}» — получить ответ своими словами со ссылками</small></div></div>`;
     if (!r.length) html += `<div class="sr-empty">Ничего не нашлось. Попробуйте другие слова или спросите помощника.</div>`;
@@ -852,6 +923,7 @@
   function menuHtml(text) { return `<div>${esc(text).replace(/\n/g, '<br>')}</div>${chips(D.ai.menu || [])}`; }
 
   function bindAI() {
+    buildAI();
     const p = $('#aiPanel');
     p.innerHTML = `<div class="ai-head"><span class="ai-ava">${ic('spark')}</span><div><b>Помощник приёмной комиссии</b><small>Отвечает по материалам сайта</small></div><button data-close aria-label="Закрыть">${ic('x')}</button></div>
       <div class="ai-msgs" id="aiMsgs"></div>
@@ -872,6 +944,7 @@
   function showIntent(id, label) {
     addMsg('me', esc(label.trim()));
     if (id === '__menu') return addMsg('bot', menuHtml('Выберите, что вас интересует 👇'));
+    if (!AI_IDX) buildAI(); // индекс тем мог ещё не строиться (до первого набранного вопроса)
     const it = AI_IDX.byId[id];
     addMsg('bot', it ? intentHtml(it) : 'Раздел не найден.');
   }
@@ -943,11 +1016,11 @@
       app.innerHTML = `<div class="container" style="padding:80px 24px"><h1>Данные сайта ещё не загружены</h1><p>Запустите <a href="import.html">импорт содержимого</a> с текущего сайта.</p></div>`;
       return;
     }
-    D.home ||= { slides: [], quickLinks: [] };
-    D.home.eyebrow ??= `${D.site.city} · ${D.site.address.replace(/^\d+,\s*/, '').replace(/^Москва,\s*/, '')}`;
-    D.home.lead ??= D.site.parentOrg.text;
+    if (!D.home) D.home = { slides: [], quickLinks: [] };
+    if (D.home.eyebrow == null) D.home.eyebrow = `${D.site.city} · ${D.site.address.replace(/^\d+,\s*/, '').replace(/^Москва,\s*/, '')}`;
+    if (D.home.lead == null) D.home.lead = D.site.parentOrg.text;
     // приёмная комиссия на время приёма документов (данные из бота приёмной комиссии; меняются в админке)
-    D.site.admission ??= {
+    if (D.site.admission == null) D.site.admission = {
       enabled: true,
       title: 'Приёмная комиссия',
       note: 'В период приёма документов',
@@ -958,7 +1031,7 @@
       hours: 'Пн-чт: 10:00-17:00, Пт-Сб: 10:00-16:00, без перерывов',
       mapQuery: 'Москва, Авиамоторная улица, 8с39',
     };
-    D.ai ||= { greeting: 'Здравствуйте!', synonyms: {} };
+    if (!D.ai) D.ai = { greeting: 'Здравствуйте!', synonyms: {} };
     if (!D.ai.intents) { // темы помощника ещё не сохранены в админке — берём перенесённые из бота
       try { const s = await (await fetch('data/assistant-seed.json')).json(); Object.assign(D.ai, { greeting: s.greeting, menu: s.menu, fallback: s.fallback, intents: s.intents }); } catch { D.ai.intents = []; }
     }
@@ -973,6 +1046,19 @@
     addEventListener('hashchange', route);
     route();
   }
+  // Если фото не загрузилось (сервер с фото недоступен) — аккуратная фирменная заглушка вместо «битой» картинки
+  addEventListener('error', e => {
+    const img = e.target;
+    if (!img || img.tagName !== 'IMG' || img.dataset.fallback) return;
+    img.dataset.fallback = '1';
+    const ph = document.createElement('span');
+    ph.className = 'img-fallback';
+    ph.setAttribute('role', 'img');
+    ph.setAttribute('aria-label', img.alt || 'Фото временно недоступно');
+    ph.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="${HEPTA}"/></svg><small>Фото временно недоступно</small>`;
+    img.replaceWith(ph);
+  }, true);
+
   window.KT = { openSearch, openAI };
   init();
 })();
