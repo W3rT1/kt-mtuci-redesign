@@ -102,6 +102,36 @@
   };
   const specAnim = code => (SPEC_ANIM[code] ? SPEC_ANIM[code]() : ic(specIcon(code)));
 
+  // Дорожки печатной платы по бокам баннера специальности: прорисовываются при загрузке,
+  // по ним от края к названию бегут «импульсы сигнала». Раскладка зависит от кода специальности.
+  function pcbTraces(side, seed = 1) {
+    let s = seed * 9301 + 49297;
+    const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+    const H = 480, W = 420, lanes = 13, step = (H - 40) / (lanes - 1);
+    let traces = '', pulses = '', vias = '';
+    for (let k = 0; k < lanes; k++) {
+      if (rnd() < 0.18) continue; // пропуски — как на настоящей плате
+      const y0 = 20 + k * step + (rnd() - .5) * 6;
+      let x = 0, y = y0, d = `M0 ${y0.toFixed(1)}`;
+      const segs = 1 + Math.floor(rnd() * 3);
+      for (let j = 0; j < segs; j++) {
+        x += 30 + rnd() * 90; d += ` H${x.toFixed(1)}`;              // прямой участок
+        const dd = 14 + rnd() * 34, dir = rnd() < .5 ? -1 : 1;
+        if (y + dir * dd < 10 || y + dir * dd > H - 10) continue;
+        x += dd; y += dir * dd; d += ` L${x.toFixed(1)} ${y.toFixed(1)}`; // поворот под 45°
+      }
+      x += 20 + rnd() * 70; d += ` H${x.toFixed(1)}`;
+      if (x > W - 12) continue;
+      const delay = (k * .07).toFixed(2), pdur = (3.2 + rnd() * 2.6).toFixed(2), pdel = (1 + rnd() * 4).toFixed(2);
+      traces += `<path class="pcb-t" pathLength="1" d="${d}" style="animation-delay:${delay}s"/>`;
+      pulses += `<path class="pcb-p" pathLength="100" d="${d}" style="animation-duration:${pdur}s;animation-delay:${pdel}s"/>`;
+      vias += `<circle class="pcb-v" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" style="animation-delay:${(+delay + .6).toFixed(2)}s,${(+pdel + +pdur * .92).toFixed(2)}s;animation-duration:.5s,${pdur}s"/>`;
+      if (rnd() < .35) vias += `<circle class="pcb-dot" cx="${(x - 10 - rnd() * 30).toFixed(1)}" cy="${(y + (rnd() < .5 ? -9 : 9)).toFixed(1)}" r="2.2" style="animation-delay:${(+delay + .8).toFixed(2)}s"/>`;
+    }
+    const flip = side === 'right' ? ` transform="translate(${W} 0) scale(-1 1)"` : '';
+    return `<svg class="pcb pcb-${side}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="${side === 'right' ? 'xMaxYMid' : 'xMinYMid'} slice" aria-hidden="true"><g${flip}>${traces}${pulses}${vias}</g></svg>`;
+  }
+
   // «Сетевой трафик» для мозаики первого экрана: пакеты бегут по зазорам между плитками от логотипа к краям
   function heroPackets() {
     const C = [104, 212, 320, 428], E = 532, mid = 266;
@@ -375,12 +405,12 @@
         </div>
         <div class="hero__art reveal reveal-d2">
           ${brandHeroArt()}
-          ${h.slides.length ? `<div class="hero__slide" id="heroSlide"></div>` : ''}
         </div>
       </div>
     </section>
 
     <div class="container quick"><div class="quick__grid">
+      ${h.slides.length ? `<a class="quick__item quick__item--ann reveal reveal-d1" id="annItem" href="#/"><span class="ic">${ic('megaphone')}</span><span class="qa"><small>Анонс</small><b id="annTitle"></b></span>${h.slides.length > 1 ? `<span class="ann-dots" aria-hidden="true">${h.slides.map(() => '<i></i>').join('')}</span>` : ''}</a>` : ''}
       ${h.quickLinks.map((q, i) => `<a class="quick__item reveal reveal-d${i % 3 + 1}"${aAttrs(q.url)}><span class="ic">${ic(q.icon || iconFor(q.title))}</span>${esc(q.title)}</a>`).join('')}
       <a class="quick__item reveal reveal-d3" href="#/quiz/"><span class="ic">${ic('quiz')}</span>Подобрать специальность</a>
     </div></div>
@@ -486,7 +516,7 @@
   }
   function sideNav(sec, path) {
     if (!sec || !sec.items.length) return '';
-    return `<aside class="side"><div class="side__title">${esc(sec.title)}</div>${sec.items.map(it => `<a${aAttrs(linkOf(it))} class="${it.route === path ? 'active' : ''}">${esc(it.title)}${it.url ? ic('ext', 'ext') : ''}</a>`).join('')}</aside>`;
+    return `<aside class="side"><div class="side__title">${esc(sec.title)}</div>${sec.items.map(it => `<a${aAttrs(linkOf(it))} class="${it.route === path ? 'active' : ''}"><span class="side__txt">${esc(it.title)}</span>${it.url ? ic('ext', 'ext') : ''}</a>`).join('')}</aside>`;
   }
 
   // ---------------- обычная страница (с авто-вкладками) ----------------
@@ -544,16 +574,16 @@
   function viewSpecialty(sp) {
     const sec = sectionOf('/abitur/specialties/');
     const hasModes = sp.modes.length > 1 && sp.facts.some(f => f.values.length > 1);
-    return `<header class="spec-hero"><div class="spec-hero__ic" aria-hidden="true">${specAnim(sp.code)}</div><div class="container">
+    return `<header class="spec-hero">${pcbTraces('left', seedOf(sp.code))}${pcbTraces('right', seedOf(sp.code) + 7)}<div class="spec-hero__ic" aria-hidden="true">${specAnim(sp.code)}</div><div class="container">
         <nav class="crumbs"><a href="#/">Главная</a><span class="sep">/</span><a href="#${sec.route}">${esc(sec.title)}</a><span class="sep">/</span><a href="#/abitur/specialties/">Специальности</a></nav>
-        <div class="spec-hero__code">${esc(sp.code)}</div><h1>${esc(sp.name)}</h1>
+        <div class="spec-hero__code">${esc(sp.code)}</div><h1 class="${sp.name.length > 48 ? 'is-long' : ''}">${esc(sp.name)}</h1>
         ${hasModes ? `<div><small style="opacity:.8">Форма обучения:</small><br><div class="mode-switch" id="modeSwitch">${sp.modes.map((m, i) => `<button data-m="${i}" class="${i ? '' : 'active'}">${esc(m)}</button>`).join('')}</div></div>` : `<p style="opacity:.85">Форма обучения: ${esc(sp.modes.join(', '))}</p>`}
         ${sp.base ? `<p style="opacity:.85;margin-top:12px">${sp.base}</p>` : ''}
         <div style="height:30px"></div></div></header>
       <div class="container">
         <div class="facts" id="facts">${sp.facts.map(f => `<div class="fact reveal"><span>${esc(f.label)}</span><b data-vals='${esc(JSON.stringify(f.values))}'>${f.values[0] || '—'}</b></div>`).join('')}</div>
         <div class="page-layout">
-          <aside class="side"><div class="side__title">Специальности</div>${D.specialties.map(s => `<a href="#/abitur/specialties/${esc(s.code)}/" class="${s === sp ? 'active' : ''}"><b style="font-variant-numeric:tabular-nums;min-width:62px">${esc(s.code)}</b> ${esc(s.name)}</a>`).join('')}</aside>
+          <aside class="side"><div class="side__title">Специальности</div>${D.specialties.map(s => `<a href="#/abitur/specialties/${esc(s.code)}/" class="side-spec ${s === sp ? 'active' : ''}"><b class="side-code">${esc(s.code)}</b><span class="side__txt">${esc(s.name)}</span></a>`).join('')}</aside>
           <article class="prose" id="prose">${sp.html}
             <div class="card" style="margin-top:32px;background:var(--grad-soft)"><h3 style="margin-top:0">Хотите поступить на эту специальность?</h3><p>Оставьте заявку — приёмная комиссия свяжется с вами.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary" href="#/abitur/documents_for_admission/" style="text-decoration:none">${ic('file')} Документы для поступления</a><button class="btn" data-apply-for="${esc(sp.code + ' ' + sp.name)}">${ic('send')} Оставить заявку</button></div></div>
@@ -666,15 +696,54 @@
       $$('#specGrid .spec-card').forEach((card, i) => { const sp = D.specialties[i]; const forms = norm((sp.forms || '') + ' ' + sp.modes.join(' ')).replace('очно-заочн', 'очная-заочн'); const ok = f === 'все' || (f === 'очная' ? /очн(ая|о)(?!-)/.test(forms) || forms.startsWith('очн') : f === 'очно-заочная' ? /очн(ая|о)-заочн/.test(forms) : /(^|\s|и )заочн/.test(forms)); card.style.display = ok ? '' : 'none'; });
     });
     // переключатель формы обучения
-    $$('#modeSwitch button').forEach(b => b.onclick = () => {
-      $$('#modeSwitch button').forEach(x => x.classList.toggle('active', x === b));
-      const m = +b.dataset.m;
-      $$('#facts b[data-vals]').forEach(el => { const v = JSON.parse(el.dataset.vals); const nv = (v[m] == null ? v[0] : v[m]); if (el.innerHTML !== nv) { el.innerHTML = nv || '—'; el.classList.remove('changed'); void el.offsetWidth; el.classList.add('changed'); } });
-    });
+    // тумблер формы обучения: «таблетка» плавно скользит, цифры в карточках мягко сменяются
+    const ms = $('#modeSwitch');
+    if (ms) {
+      const moveThumb = sliderThumb(ms);
+      $$('button', ms).forEach(b => b.onclick = () => {
+        if (b.classList.contains('active')) return;
+        $$('button', ms).forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-pressed', x === b); });
+        moveThumb(b);
+        const m = +b.dataset.m;
+        $$('#facts b[data-vals]').forEach((el, k) => {
+          const v = JSON.parse(el.dataset.vals); const nv = (v[m] == null ? v[0] : v[m]) || '—';
+          if (el.innerHTML === nv) return;
+          setTimeout(() => {                      // небольшая «волна» по карточкам
+            el.classList.add('val-out');
+            setTimeout(() => {
+              el.innerHTML = nv;
+              el.classList.remove('val-out'); el.classList.add('val-from');
+              void el.offsetWidth;
+              el.classList.remove('val-from');
+            }, 260);
+          }, k * 45);
+        });
+      });
+    }
     $$('[data-apply-for]').forEach(b => b.onclick = () => { const seg = $('#formSeg button[data-f="apply"]'); seg && seg.click(); const ta = $('#feedback textarea'); if (ta) ta.value = 'Хочу поступить на специальность ' + b.dataset.applyFor; $('#contacts').scrollIntoView({ behavior: 'smooth' }); });
     // подсветка найденного (переход из поиска)
     const term = q.get('q');
     if (term) highlightTerm(term);
+  }
+
+  // Скользящая подложка для переключателя из кнопок (тумблер). Возвращает функцию «переехать к кнопке».
+  function sliderThumb(box) {
+    box.classList.add('has-thumb');
+    const thumb = document.createElement('span'); thumb.className = 'sw-thumb'; thumb.setAttribute('aria-hidden', 'true');
+    box.prepend(thumb);
+    const place = (btn, instant) => {
+      if (!btn) return;
+      if (instant) thumb.style.transition = 'none';
+      thumb.style.width = btn.offsetWidth + 'px'; thumb.style.height = btn.offsetHeight + 'px';
+      thumb.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
+      if (instant) { void thumb.offsetWidth; thumb.style.transition = ''; }
+    };
+    const active = () => $('button.active', box);
+    place(active(), true);
+    // шрифт мог догрузиться позже, а окно — изменить размер: пересчитываем без анимации
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => place(active(), true));
+    addEventListener('resize', () => { if (box.isConnected) place(active(), true); });
+    return btn => place(btn, false);
   }
 
   function activateTab(i) {
@@ -739,21 +808,39 @@
   }
 
   function bindHome() {
-    const card = $('#heroSlide'), slides = D.home.slides || []; let i = 0, timer;
+    // блок «Анонс» в ряду быстрых ссылок: анонсы (слайды из админки) сменяются по очереди
+    const ann = $('#annItem'), slides = D.home.slides || []; let i = 0, timer, paused = false;
     const draw = () => {
       const sl = slides[i];
-      card.innerHTML = `<small>Анонс</small><b>${esc(sl.title)}</b>${sl.text && sl.text !== sl.title ? `<p>${esc(sl.text)}</p>` : ''}
-        <div class="row">${sl.link ? `<a class="btn btn-sm btn-primary"${aAttrs(sl.link)}>Подробнее ${ic('arrow')}</a>` : '<span></span>'}
-        <div class="dots">${slides.map((_, k) => `<button class="${k === i ? 'active' : ''}" data-i="${k}" aria-label="Слайд ${k + 1}"></button>`).join('')}</div></div>`;
-      $$('.dots button', card).forEach(b => b.onclick = () => show(+b.dataset.i));
+      $('#annTitle', ann).textContent = sl.title;
+      ann.title = sl.text && sl.text !== sl.title ? sl.text : sl.title;
+      const link = sl.link || '#/';
+      ann.setAttribute('href', link);
+      if (isExt(link)) { ann.target = '_blank'; ann.rel = 'noopener'; } else { ann.removeAttribute('target'); ann.removeAttribute('rel'); }
+      $$('.ann-dots i', ann).forEach((d, k) => d.classList.toggle('on', k === i));
     };
     const show = n => {
-      if (!card || !card.isConnected) return clearTimeout(timer);
+      if (!ann || !ann.isConnected) return clearTimeout(timer);
       i = (n + slides.length) % slides.length;
-      card.classList.add('swap'); setTimeout(() => { draw(); card.classList.remove('swap'); }, 250);
-      clearTimeout(timer); timer = setTimeout(() => show(i + 1), 6500);
+      // плавная смена в две фазы: старый текст уходит вверх, новый поднимается снизу
+      const qa = $('.qa', ann);
+      qa.classList.add('ann-out');
+      setTimeout(() => {
+        draw();
+        qa.classList.remove('ann-out'); qa.classList.add('ann-from');
+        void qa.offsetWidth;            // зафиксировать стартовое положение
+        qa.classList.remove('ann-from');
+      }, 420);
+      plan();
     };
-    if (card && slides.length) { draw(); timer = setTimeout(() => show(1), 6500); }
+    const plan = () => { clearTimeout(timer); if (slides.length > 1 && !paused) timer = setTimeout(() => show(i + 1), 6000); };
+    if (ann && slides.length) {
+      draw(); plan();
+      ann.addEventListener('mouseenter', () => { paused = true; clearTimeout(timer); });
+      ann.addEventListener('mouseleave', () => { paused = false; plan(); });
+      ann.addEventListener('focus', () => { paused = true; clearTimeout(timer); });
+      ann.addEventListener('blur', () => { paused = false; plan(); });
+    }
     const hs = $('#heroSearch'); hs.onsubmit = e => { e.preventDefault(); const v = hs.q.value.trim(); if (v) openAI(v); };
     // готовые запросы под строкой «Спросите…» отправляются помощнику, как и сама строка
     $$('.hero__chips button').forEach(b => b.onclick = () => openAI(b.dataset.q));
