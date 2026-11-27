@@ -959,3 +959,99 @@ html[data-theme="dark"] .img-fallback{color:var(--brand-3)}
 .topbar .dd-menu a{white-space:nowrap}
 .topbar .dd button[aria-expanded="true"] .icon:last-child{transform:rotate(180deg)}
 .topbar .dd button .icon:last-child{transition:transform .2s}
+/* ---------- блок «Анонс» в ряду быстрых ссылок ---------- */
+.quick__grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.quick__item--ann{position:relative;overflow:hidden}
+.quick__item--ann .qa{display:flex;flex-direction:column;min-width:0;transition:opacity .22s,transform .22s var(--ease)}
+.quick__item--ann.swap .qa{opacity:0;transform:translateY(6px)}
+.quick__item--ann .qa small{font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);line-height:1.2;margin-bottom:2px}
+html[data-theme="dark"] .quick__item--ann .qa small{color:var(--brand-3)}
+.quick__item--ann .qa b{font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;hyphens:auto}
+.quick__item--ann .ic{position:relative}
+.quick__item--ann .ic::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 0 rgba(229,72,77,.5);animation:annPulse 2s infinite}
+@keyframes annPulse{0%{box-shadow:0 0 0 0 rgba(229,72,77,.5)}70%{box-shadow:0 0 0 7px rgba(229,72,77,0)}100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+.ann-dots{position:absolute;left:20px;right:20px;bottom:7px;display:flex;gap:4px}
+.ann-dots i{flex:1;height:3px;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
+.ann-dots i.on::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:var(--brand-fill);transform-origin:left;animation:annFill 6s linear forwards}
+.quick__item--ann:hover .ann-dots i.on::after,.quick__item--ann:focus .ann-dots i.on::after{animation-play-state:paused}
+@keyframes annFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (max-width:1100px){.quick__grid{grid-template-columns:repeat(3,minmax(0,1fr))}.quick__item--ann{grid-column:span 3}}
+@media (max-width:760px){.quick__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quick__item--ann{grid-column:span 2}}
+@media (max-width:380px){.quick__grid{grid-template-columns:1fr}.quick__item--ann{grid-column:auto}}
+@media (prefers-reduced-motion:reduce){.quick__item--ann .ic::after,.ann-dots i.on::after{animation:none}.ann-dots i.on::after{transform:none}}
+/* ---------- длинные названия: на всю ширину до значка, без переносов слов ---------- */
+.spec-hero .container > :not(.facts){max-width:none}
+.spec-hero h1{max-width:calc(100% - 260px);hyphens:manual;-webkit-hyphens:manual;overflow-wrap:normal;text-wrap:balance}
+.spec-hero h1.is-long{font-size:clamp(1.6rem,3vw,2.5rem)}
+.spec-hero .crumbs,.spec-hero .mode-switch{max-width:calc(100% - 260px)}
+.page-hero h1{hyphens:manual;-webkit-hyphens:manual;text-wrap:balance}
+@media (min-width:761px){h1,h2,.spec-card h3{hyphens:manual;-webkit-hyphens:manual}}
+@media (max-width:900px){.spec-hero h1{max-width:calc(100% - 150px)}}
+@media (max-width:760px){.spec-hero h1,.spec-hero .crumbs,.spec-hero .mode-switch{max-width:none}.spec-hero h1{hyphens:auto;-webkit-hyphens:auto}}
+
+/* ---------- плавная смена анонсов ---------- */
+.quick__item--ann .qa{transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.2,.8,.2,1),filter .45s}
+.quick__item--ann .qa.ann-out{opacity:0;transform:translateY(-10px);filter:blur(2px);transition-duration:.4s}
+.quick__item--ann .qa.ann-from{opacity:0;transform:translateY(12px);filter:blur(2px);transition:none}
+.quick__item--ann.swap .qa{opacity:1;transform:none}
+
+/* ---------- дорожки печатной платы в баннере специальности ---------- */
+.spec-hero{overflow:hidden}
+.pcb{position:absolute;top:0;bottom:0;height:100%;pointer-events:none;z-index:0;overflow:visible}
+.pcb-left{left:0;width:calc((100% - 1240px) / 2 + 20px)}
+.pcb-right{right:0;width:max(280px, calc((100% - 1240px) / 2 + 280px))}
+.spec-hero .container,.spec-hero__ic{z-index:1}
+.spec-hero .container{position:relative}
+.pcb .pcb-t{fill:none;stroke:rgba(255,255,255,.2);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:pcbDraw 1.6s cubic-bezier(.65,0,.35,1) forwards}
+.pcb .pcb-p{fill:none;stroke:#d9d2f5;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:7 93;stroke-dashoffset:100;opacity:0;filter:drop-shadow(0 0 3px rgba(217,210,245,.9));animation-name:pcbPulse;animation-timing-function:cubic-bezier(.45,0,.55,1);animation-iteration-count:infinite;animation-fill-mode:both}
+.pcb .pcb-v{fill:#372579;stroke:rgba(255,255,255,.45);stroke-width:1.6;opacity:0;transform-box:fill-box;transform-origin:center;animation-name:pcbIn,pcbVia;animation-fill-mode:forwards,none;animation-iteration-count:1,infinite;animation-timing-function:ease-out,ease-in-out}
+.pcb .pcb-dot{fill:rgba(255,255,255,.35);opacity:0;animation:pcbIn .5s ease-out forwards}
+@keyframes pcbDraw{to{stroke-dashoffset:0}}
+@keyframes pcbPulse{0%{stroke-dashoffset:100;opacity:0}8%{opacity:1}85%{opacity:1}100%{stroke-dashoffset:7;opacity:0}}
+@keyframes pcbIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes pcbVia{0%,88%,100%{stroke:rgba(255,255,255,.45);fill:#372579}93%{stroke:#fff;fill:#8f80d6}}
+@media (max-width:1400px){.pcb-left{display:none}}
+@media (max-width:760px){.pcb-right{display:none}}
+@media (prefers-reduced-motion:reduce){.pcb .pcb-t{animation:none;stroke-dashoffset:0}.pcb .pcb-p{display:none}.pcb .pcb-v,.pcb .pcb-dot{animation:none;opacity:1}}
+.spec-hero .container > h1{max-width:calc(100% - 270px)}
+.spec-hero .container > .crumbs{max-width:calc(100% - 270px)}
+@media (max-width:900px){.spec-hero .container > h1,.spec-hero .container > .crumbs{max-width:calc(100% - 150px)}}
+@media (max-width:760px){.spec-hero .container > h1,.spec-hero .container > .crumbs{max-width:none}}
+/* «Анонс»: место под заголовок всегда на 2 строки — высота блока не меняется при смене анонса */
+.quick__item--ann .qa b{line-height:1.3;height:2.6em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.quick__item--ann .qa{justify-content:center}
+.quick__item--ann{contain:layout}
+/* ---------- тумблер формы обучения: скользящая «таблетка» ---------- */
+.mode-switch.has-thumb{position:relative;isolation:isolate}
+.mode-switch .sw-thumb{position:absolute;top:0;left:0;border-radius:999px;background:#fff;box-shadow:0 4px 14px rgba(21,21,21,.18);z-index:-1;
+  transition:transform .5s cubic-bezier(.65,0,.25,1.15),width .5s cubic-bezier(.65,0,.25,1),height .3s;will-change:transform}
+.mode-switch.has-thumb button{position:relative;z-index:1;background:transparent!important;transition:color .35s ease}
+.mode-switch.has-thumb button.active{color:#372579}
+.mode-switch.has-thumb button:not(.active):hover{color:#fff;opacity:.85}
+/* цифры в карточках: старое значение уходит вверх, новое поднимается снизу */
+.fact b{display:block;transition:opacity .28s ease,transform .38s cubic-bezier(.2,.8,.2,1),filter .28s}
+.fact b.val-out{opacity:0;transform:translateY(-8px);filter:blur(1.5px)}
+.fact b.val-from{opacity:0;transform:translateY(10px);filter:blur(1.5px);transition:none}
+.fact b.changed{animation:none}
+@media (prefers-reduced-motion:reduce){.mode-switch .sw-thumb,.fact b{transition:none}}
+/* ограничение ширины заголовка баннера специальности (сильнее правила max-width:none) */
+.spec-hero .container > h1:not(.facts),.spec-hero .container > .crumbs:not(.facts){max-width:calc(100% - 270px)}
+@media (max-width:900px){.spec-hero .container > h1:not(.facts),.spec-hero .container > .crumbs:not(.facts){max-width:calc(100% - 150px)}}
+@media (max-width:760px){.spec-hero .container > h1:not(.facts),.spec-hero .container > .crumbs:not(.facts){max-width:none}}
+.spec-hero h1.is-long{font-size:clamp(1.5rem,2.5vw,2.15rem);letter-spacing:-.02em}
+/* ---------- боковое меню: текст всегда внутри своей плашки ---------- */
+.side a{align-items:flex-start;min-width:0}
+.side__txt{flex:1 1 auto;min-width:0;overflow-wrap:break-word;word-break:normal;hyphens:auto;-webkit-hyphens:auto}
+.side a .ext{flex:none;margin-top:3px}
+.side-spec{gap:10px}
+.side-code{flex:none;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:.82rem;line-height:1.45;min-width:58px}
+@media (max-width:760px){.side__txt{white-space:nowrap}.side-spec .side__txt{white-space:nowrap}}
+/* меню специальностей: код отдельной строкой над названием — название занимает всю ширину, слова не рвутся */
+.side-spec{flex-direction:column;align-items:flex-start;gap:1px}
+.side-spec .side-code{min-width:0;font-size:.74rem;letter-spacing:.04em;opacity:.75}
+.side-spec .side__txt{width:100%;font-size:.88rem;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual}
+.side a.active .side-code{opacity:.85}
+@media (max-width:760px){.side-spec{flex-direction:row;align-items:center;gap:8px}.side-spec .side-code{font-size:.8rem}}
+/* «Анонс» чуть шире остальных быстрых ссылок — длинные заголовки анонсов не рвутся */
+@media (min-width:1101px){.quick__grid{grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr))}}
+.quick__item--ann .qa b{hyphens:manual;-webkit-hyphens:manual;overflow-wrap:normal}
