@@ -1145,3 +1145,30 @@ html[data-theme="dark"] .quick__item--ann .qa small{color:var(--brand-3)}
 .bp-hero .lc-hepta{transform-box:view-box;animation:lcTurn 8s infinite;backface-visibility:hidden}
 @keyframes lcTurn{0%,70%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.45,0,.25,1)}100%{transform:rotate(51.4286deg)}}
 @media (prefers-reduced-motion:reduce){.bp-hero .lc-hepta{animation:none}}
+
+/* ---------- баннер «Подбор специальности»: витрина анимированных иконок специальностей ---------- */
+.cta-band .cta-band__art.cta-spec{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:340px;justify-self:end;z-index:1;color:#fff}
+.cta-spec__stage{display:grid;width:100%}
+.cta-spec__item{grid-area:1/1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;color:#fff;text-decoration:none;
+  opacity:0;transform:translateY(14px) scale(.94);filter:blur(3px);pointer-events:none;
+  transition:opacity .55s ease,transform .7s cubic-bezier(.2,.8,.2,1),filter .55s ease}
+.cta-spec__item.on{opacity:1;transform:none;filter:none;pointer-events:auto}
+.cta-spec__item.off{opacity:0;transform:translateY(-14px) scale(.96);filter:blur(3px)}
+.cta-spec__item:not(.on) *{animation-play-state:paused!important}
+.cta-spec__ic{width:150px;height:150px;border-radius:34px;display:grid;place-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 18px 40px rgba(10,6,30,.28),inset 0 1px 0 rgba(255,255,255,.18);transition:background .3s,transform .4s cubic-bezier(.2,.8,.2,1)}
+.cta-spec__ic .sa,.cta-spec__ic svg{width:92px;height:92px;stroke-width:1.9}
+.cta-spec__ic .sa-ai .sa-n{fill:#372579}
+.cta-spec__item:hover .cta-spec__ic{background:rgba(255,255,255,.18);transform:translateY(-3px)}
+.cta-spec__code{margin-top:4px;font-size:.78rem;font-weight:700;letter-spacing:.08em;color:#c9c1ea;font-variant-numeric:tabular-nums}
+.cta-spec__name{font-weight:700;font-size:.98rem;line-height:1.3;max-width:300px;min-height:3.9em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;hyphens:manual}
+.cta-spec__dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.cta-spec__dots button{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:rgba(255,255,255,.3);cursor:pointer;transition:width .4s cubic-bezier(.2,.8,.2,1),background .3s}
+.cta-spec__dots button.on{width:22px;background:#fff}
+.cta-spec__dots button:hover{background:rgba(255,255,255,.6)}
+@media (max-width:900px){
+  .cta-band .cta-band__art.cta-spec{order:0;max-width:none;justify-self:stretch;flex-direction:column}
+  .cta-spec__ic{width:112px;height:112px;border-radius:26px}
+  .cta-spec__ic .sa,.cta-spec__ic svg{width:68px;height:68px}
+}
+@media (prefers-reduced-motion:reduce){.cta-spec__item,.cta-spec__dots button,.cta-spec__ic{transition:none}.cta-spec__item{filter:none!important}}
