@@ -211,7 +211,7 @@
       ${cells}
       ${heroPackets()}
       <g class="logo-card"><rect x="${lx}" y="${ly}" width="${lw}" height="${T}" rx="18"/>
-        <polygon class="lc-hepta" points="${hepta}"/>
+        <polygon class="lc-hepta" points="${hepta}" style="transform-origin:${hx + hs / 2}px ${hy + hs / 2}px"/>
         <text class="lc-name" x="${lx + 104}" y="${ly + 54}" textLength="150" lengthAdjust="spacingAndGlyphs">МТУСИ</text>
         <text class="lc-sub" x="${lx + 105}" y="${ly + 74}" textLength="186" lengthAdjust="spacingAndGlyphs">КОЛЛЕДЖ ТЕЛЕКОММУНИКАЦИЙ</text></g>
     </svg>`;
