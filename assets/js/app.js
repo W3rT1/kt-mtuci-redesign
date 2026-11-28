@@ -427,10 +427,11 @@
     </div></section>
 
     <section class="section"><div class="container">
-      <div class="cta-band reveal">
-        <div class="cta-band__text"><span class="eyebrow">Новое</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на 6 коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего.</p>
+      <div class="cta-band cta-band--quiz reveal">
+        <div class="cta-band__art" aria-hidden="true">${brandWave(4, 3, 5, { ox: -1, oy: 1 })}</div>
+        <div class="cta-band__text"><span class="eyebrow">Подбор специальности</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на ${quizQ().length} коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего. Это займёт около минуты.</p>
           <div class="cta-band__btns"><a class="btn btn-white" href="#/quiz/">${ic('quiz')} Пройти тест</a><button class="btn btn-light" data-ai-open>${ic('spark')} Спросить помощника</button></div></div>
-        <div class="cta-band__art">${brandWave(4, 3, 5, { ox: -1, oy: 1 })}</div>
+        ${ctaQuizCard()}
       </div>
     </div></section>
 
@@ -461,11 +462,11 @@
       <div class="section__head reveal"><div><span class="eyebrow">Связь</span><h2>Контакты и обратная связь</h2></div></div>
       <div class="contact-grid">
         <div class="card reveal">
-          <div class="seg" id="formSeg"><button class="active" data-f="question">Задать вопрос</button><button data-f="apply">Заявка на обучение</button></div>
+          <div class="seg" id="formSeg" role="group" aria-label="Тип обращения"><button type="button" class="active" data-f="question" aria-pressed="true">Задать вопрос</button><button type="button" data-f="apply" aria-pressed="false">Заявка на обучение</button></div>
           <form class="form-grid" id="feedback">
             <div class="two"><input class="input" name="name" placeholder="Ваше имя *" required><input class="input" name="email" type="email" placeholder="Электронная почта *" required></div>
-            <input class="input" name="phone" type="tel" placeholder="Телефон *" data-apply hidden>
-            <textarea class="textarea" name="message" placeholder="Ваше обращение"></textarea>
+            <div class="fold" data-apply-wrap><div class="fold__in"><input class="input" name="phone" type="tel" placeholder="Телефон *" data-apply disabled></div></div>
+            <textarea class="textarea" name="message" placeholder="Ваш вопрос"></textarea>
             <label class="check"><input type="checkbox" required> <span>Нажимая на кнопку «Отправить», вы даете согласие на <a${aAttrs(s.privacyUrl)}>обработку своих персональных данных</a></span></label>
             <button class="btn btn-primary" style="justify-self:start">${ic('send')} Отправить</button>
           </form>
@@ -610,30 +611,118 @@
     { q: 'Где вы видите себя после колледжа?', o: [['🏢', 'В IT-компании', { '09.02.11': 2, '09.02.13': 2, '09.02.06': 1 }], ['📶', 'У оператора связи или в дата-центре', { '11.02.15': 2, '09.02.06': 2, '11.02.18': 1 }], ['🎬', 'На телевидении, радио или в медиа', { '11.02.18': 2, '42.02.01': 2 }], ['💼', 'В бухгалтерии или финансовом отделе', { '38.02.01': 3 }], ['🔒', 'В службе информационной безопасности', { '10.02.04': 3 }]] },
     { q: 'Как вам комфортнее учиться?', o: [['🏫', 'Очно — каждый день в колледже', {}], ['🌙', 'Очно-заочно — совмещать с работой', { '09.02.06': 1, '09.02.11': 1 }], ['📮', 'Заочно', { '11.02.15': 1 }]] },
   ];
-  let quizState = null;
-  function viewQuiz() {
-    quizState = { i: 0, scores: {} };
-    return `${pageHero('Подбор специальности', [{ title: 'Абитуриенту', href: '#/abitur/' }, { title: 'Тест' }])}<div class="container"><div class="quiz" id="quiz"></div></div>`;
+  const quizQ = () => (D.quiz && D.quiz.length) ? D.quiz : DEFAULT_QUIZ;
+  let quizState = null, quizPending = null, quizKeysBound = false;
+  const quizReset = () => ({ i: 0, scores: {}, hist: [] });
+  const RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Блок на главной: первый вопрос теста прямо в баннере — ответ сразу переносит на второй вопрос
+  function ctaQuizCard() {
+    const Q = quizQ(), q = Q[0]; if (!q) return '';
+    return `<div class="cta-quiz" id="ctaQuiz">
+      <div class="cta-quiz__head"><span>Вопрос 1 из ${Q.length}</span><span class="cta-quiz__bar"><i style="width:${Math.round(100 / Q.length)}%"></i></span></div>
+      <h3>${esc(q.q)}</h3>
+      <div class="cta-quiz__opts">${q.o.map((o, k) => `<button type="button" data-k="${k}"><span class="em" aria-hidden="true">${o[0]}</span><span class="tx">${esc(o[1])}</span>${ic('arrow')}</button>`).join('')}</div>
+    </div>`;
   }
-  function renderQuiz() {
+  function bindCtaQuiz() {
+    $$('#ctaQuiz button').forEach(b => b.onclick = () => {
+      b.classList.add('picked');
+      quizPending = +b.dataset.k;
+      setTimeout(() => { location.hash = '#/quiz/'; }, RM() ? 0 : 260);
+    });
+  }
+
+  function viewQuiz() {
+    quizState = quizReset();
+    return `${pageHero('Подбор специальности', [{ title: 'Абитуриенту', href: '#/abitur/' }, { title: 'Тест' }])}<div class="container"><div class="quiz" id="quiz" aria-live="polite"></div></div><div id="quizContacts"></div>`;
+  }
+  function quizAnswer(k) {
+    const q = quizQ()[quizState.i]; if (!q || !q.o[k]) return;
+    const sc = q.o[k][2] || {};
+    for (const c in sc) quizState.scores[c] = (quizState.scores[c] || 0) + sc[c];
+    quizState.hist.push(k); quizState.i++;
+  }
+  function quizBack() {
+    if (!quizState.hist.length) return;
+    quizState.i--; const k = quizState.hist.pop();
+    const sc = (quizQ()[quizState.i].o[k] || [])[2] || {};
+    for (const c in sc) quizState.scores[c] -= sc[c];
+  }
+  // смена экрана теста: старый вопрос уезжает, новый въезжает (назад — в обратную сторону)
+  function quizGo(fn, dir) {
+    const box = $('#quiz'), cur = box && $('.quiz__q', box);
+    if (!cur || RM()) { fn(); renderQuiz(dir); return; }
+    if (box.dataset.busy) return; box.dataset.busy = '1';
+    cur.classList.add(dir === 'back' ? 'q-out-back' : 'q-out');
+    setTimeout(() => { delete box.dataset.busy; fn(); renderQuiz(dir); }, 230);
+  }
+  function renderQuiz(dir) {
     const box = $('#quiz'); if (!box) return;
-    const Q = (D.quiz && D.quiz.length) ? D.quiz : DEFAULT_QUIZ;
-    if (quizState.i >= Q.length) {
-      const max = Math.max(1, ...Object.values(quizState.scores));
-      const ranked = D.specialties.map(sp => ({ sp, s: quizState.scores[sp.code] || 0 })).sort((a, b) => b.s - a.s).slice(0, 3);
-      box.innerHTML = `<div class="quiz__progress"><i style="width:100%"></i></div><div class="quiz__q"><span class="eyebrow">Результат</span><h2>Вам могут подойти:</h2>
-        <div class="quiz-result">${ranked.map((r, i) => `${specCard(r.sp, i).replace('</a>', `<div class="match"><i style="width:${Math.round(r.s / max * 100)}%"></i></div><small class="muted">Совпадение: ${Math.round(r.s / max * 100)}%</small></a>`)}`).join('')}</div>
-        <p class="muted" style="margin-top:20px">Тест — только подсказка. Подробности о каждой специальности — на её странице, а ответы на вопросы даст приёмная комиссия.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="quizAgain">Пройти заново</button><a class="btn btn-primary" href="#/abitur/specialties/compare/">${ic('compare')} Сравнить специальности</a></div></div>`;
-      $('#quizAgain').onclick = () => { quizState = { i: 0, scores: {} }; renderQuiz(); };
-      observeReveal();
-      return;
+    const Q = quizQ();
+    if (quizPending != null && quizState.i === 0) { quizAnswer(quizPending); dir = 'fwd'; }
+    quizPending = null;
+    if (!quizKeysBound) {                // 1–9 — выбрать ответ, Backspace — назад
+      quizKeysBound = true;
+      addEventListener('keydown', e => {
+        if (!$('#quiz .quiz__opts') || /input|textarea|select/i.test((e.target.tagName || '')) || e.ctrlKey || e.metaKey || e.altKey) return;
+        const n = parseInt(e.key, 10);
+        if (n >= 1) { const b = $(`#quiz .quiz__opt[data-k="${n - 1}"]`); if (b) { e.preventDefault(); b.click(); } }
+        else if (e.key === 'Backspace' && quizState.hist.length) { e.preventDefault(); quizGo(quizBack, 'back'); }
+      });
     }
+    const inCls = dir === 'back' ? ' q-in-back' : dir ? ' q-in' : '';
+    const pct = Math.round(quizState.i / Q.length * 100);
+    if (quizState.i >= Q.length) { renderQuizResult(box, Q, inCls); return; }
     const q = Q[quizState.i];
-    box.innerHTML = `<div class="quiz__progress"><i style="width:${quizState.i / Q.length * 100}%"></i></div>
-      <div class="quiz__q"><span class="eyebrow">Вопрос ${quizState.i + 1} из ${Q.length}</span><h2>${esc(q.q)}</h2>
-      <div class="quiz__opts">${q.o.map((o, k) => `<button class="quiz__opt" data-k="${k}"><span class="em">${o[0]}</span>${esc(o[1])}</button>`).join('')}</div></div>`;
-    $$('.quiz__opt', box).forEach(b => b.onclick = () => { const sc = q.o[+b.dataset.k][2]; for (const c in sc) quizState.scores[c] = (quizState.scores[c] || 0) + sc[c]; quizState.i++; renderQuiz(); });
+    box.innerHTML = `<div class="quiz__top"><div class="quiz__progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>
+        <div class="quiz__steps">${Q.map((_, k) => `<i class="${k < quizState.i ? 'done' : k === quizState.i ? 'cur' : ''}"></i>`).join('')}</div></div>
+      <div class="quiz__q${inCls}"><div class="quiz__meta"><span class="eyebrow">Вопрос ${quizState.i + 1} из ${Q.length}</span>${quizState.hist.length ? `<button type="button" class="quiz__back" id="quizBack">← Назад</button>` : ''}</div>
+      <h2>${esc(q.q)}</h2>
+      <div class="quiz__opts">${q.o.map((o, k) => `<button type="button" class="quiz__opt" data-k="${k}" style="--d:${k * 45}ms"><span class="em" aria-hidden="true">${o[0]}</span><span class="tx">${esc(o[1])}</span>${k < 9 ? `<kbd aria-hidden="true">${k + 1}</kbd>` : ''}</button>`).join('')}</div>
+      <p class="quiz__hint muted">Можно отвечать цифрами на клавиатуре.</p></div>`;
+    $$('.quiz__opt', box).forEach(b => b.onclick = () => {
+      if (box.dataset.busy) return;
+      $$('.quiz__opt', box).forEach(x => x.classList.toggle('picked', x === b));
+      const k = +b.dataset.k;
+      setTimeout(() => quizGo(() => quizAnswer(k), 'fwd'), RM() ? 0 : 160);
+    });
+    const back = $('#quizBack'); if (back) back.onclick = () => quizGo(quizBack, 'back');
+    const qc = $('#quizContacts'); if (qc && qc.innerHTML) qc.innerHTML = '';
+  }
+  function renderQuizResult(box, Q, inCls) {
+    // максимум баллов, который могла набрать каждая специальность, — чтобы «совпадение» было честным
+    const possible = {};
+    Q.forEach(q => { const best = {}; q.o.forEach(o => { const sc = o[2] || {}; for (const c in sc) best[c] = Math.max(best[c] || 0, sc[c]); }); for (const c in best) possible[c] = (possible[c] || 0) + best[c]; });
+    const ranked = D.specialties.map(sp => {
+      const s = quizState.scores[sp.code] || 0;
+      return { sp, s, pct: possible[sp.code] ? Math.min(100, Math.round(s / possible[sp.code] * 100)) : 0 };
+    }).sort((a, b) => b.s - a.s || b.pct - a.pct).slice(0, 3);
+    box.innerHTML = `<div class="quiz__top"><div class="quiz__progress"><i style="width:100%"></i></div><div class="quiz__steps">${Q.map(() => '<i class="done"></i>').join('')}</div></div>
+      <div class="quiz__q${inCls}"><div class="quiz__meta"><span class="eyebrow">Результат</span><button type="button" class="quiz__back" id="quizBack">← Изменить ответ</button></div>
+      <h2>Вам могут подойти</h2>
+      <div class="quiz-result">${ranked.map((r, i) => `<div class="qr${i === 0 ? ' qr--top' : ''}" style="--d:${i * 90}ms">
+          ${i === 0 ? '<span class="qr__badge">Лучшее совпадение</span>' : ''}
+          ${specCard(r.sp, i).replace('</a>', `<div class="match" aria-hidden="true"><i style="--w:${r.pct}%"></i></div><small class="muted">Совпадение с вашими ответами: <b>${r.pct}%</b></small></a>`)}
+          <div class="qr__acts"><button type="button" class="btn btn-sm btn-primary" data-quiz-apply="${esc(r.sp.code + ' ' + r.sp.name)}">${ic('send')} Оставить заявку</button><button type="button" class="btn btn-sm" data-quiz-ask="${esc(r.sp.name)}">${ic('spark')} Спросить помощника</button></div>
+        </div>`).join('')}</div>
+      <p class="muted" style="margin-top:20px">Тест — только подсказка. Подробности о каждой специальности — на её странице, а ответы на вопросы даст приёмная комиссия.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="btn" id="quizAgain">Пройти заново</button><a class="btn btn-primary" href="#/abitur/specialties/compare/">${ic('compare')} Сравнить специальности</a></div></div>`;
+    $('#quizAgain').onclick = () => quizGo(() => { quizState = quizReset(); }, 'back');
+    $('#quizBack').onclick = () => quizGo(quizBack, 'back');
+    // полосы совпадения заполняются после появления
+    setTimeout(() => $$('.qr .match i', box).forEach(el => { el.style.width = el.style.getPropertyValue('--w'); }), 60);
+    // форма заявки — прямо под результатом
+    const qc = $('#quizContacts');
+    $$('.qr .reveal', box).forEach(el => el.classList.add('in'));   // карточки появляются своей анимацией .qr
+    if (qc && !qc.innerHTML) { qc.innerHTML = contactsBlock(); bindForms(); }
+    observeReveal();
+    $$('[data-quiz-apply]', box).forEach(b => b.onclick = () => {
+      const seg = $('#formSeg button[data-f="apply"]'); if (seg) seg.click();
+      const ta = $('#feedback textarea'); if (ta) ta.value = 'Хочу поступить на специальность ' + b.dataset.quizApply;
+      const c = $('#contacts'); if (c) c.scrollIntoView({ behavior: 'smooth' });
+    });
+    $$('[data-quiz-ask]', box).forEach(b => b.onclick = () => openAI('Расскажи о специальности ' + b.dataset.quizAsk));
   }
 
   // ---------------- новости ----------------
@@ -682,7 +771,7 @@
     observeReveal();
     watchAnimations();
     const act = $('.side a.active'); if (act && innerWidth < 760) act.parentElement.scrollLeft = act.offsetLeft - 16;
-    if (path === '/') bindHome();
+    if (path === '/') { bindHome(); bindCtaQuiz(); }
     if (path === '/news/') bindNews(q);
     if (path === '/quiz/') renderQuiz();
     bindForms();
@@ -851,10 +940,26 @@
   // ---------------- формы ----------------
   function bindForms() {
     const ms = $('#mapSeg');
-    if (ms) ms.onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('button', ms).forEach(x => x.classList.toggle('active', x === b)); $('#mapFrame').src = `https://yandex.ru/map-widget/v1/?text=${encodeURIComponent(b.dataset.map)}&z=16`; };
-    const seg = $('#formSeg'); const form = $('#feedback'); if (!form) return;
+    if (ms && !ms.classList.contains('has-thumb')) {
+      const moveMap = sliderThumb(ms);
+      ms.onclick = e => { const b = e.target.closest('button'); if (!b || b.classList.contains('active')) return; $$('button', ms).forEach(x => x.classList.toggle('active', x === b)); moveMap(b); $('#mapFrame').src = `https://yandex.ru/map-widget/v1/?text=${encodeURIComponent(b.dataset.map)}&z=16`; };
+    }
+    const seg = $('#formSeg'); const form = $('#feedback'); if (!form || !seg || seg.classList.contains('has-thumb')) return;
     let type = 'question';
-    seg.onclick = e => { const b = e.target.closest('button'); if (!b) return; type = b.dataset.f; $$('button', seg).forEach(x => x.classList.toggle('active', x === b)); const ph = $('[data-apply]', form); ph.hidden = type !== 'apply'; ph.required = type === 'apply'; };
+    // тумблер «Задать вопрос / Заявка на обучение»: подложка скользит, поле телефона плавно раскрывается
+    const moveSeg = sliderThumb(seg);
+    const wrap = $('[data-apply-wrap]', form), ph = $('[data-apply]', form), ta = $('textarea', form);
+    seg.onclick = e => {
+      const b = e.target.closest('button'); if (!b || b.classList.contains('active')) return;
+      type = b.dataset.f;
+      $$('button', seg).forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-pressed', x === b); });
+      moveSeg(b);
+      const apply = type === 'apply';
+      wrap.classList.toggle('open', apply);
+      ph.disabled = !apply; ph.required = apply;
+      ta.classList.add('ph-swap');
+      setTimeout(() => { ta.placeholder = apply ? 'Какая специальность интересует? Удобное время для звонка' : 'Ваш вопрос'; ta.classList.remove('ph-swap'); }, 180);
+    };
     form.onsubmit = async e => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(form)); data.type = type === 'apply' ? 'Заявка на обучение' : 'Вопрос'; data.date = new Date().toISOString(); data.page = location.hash;
