@@ -1140,3 +1140,8 @@ html[data-theme="dark"] .quick__item--ann .qa small{color:var(--brand-3)}
   .quick__item:not(.quick__item--ann){flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:10px}
   .quick__item:not(.quick__item--ann) .qt{flex:none;width:100%}
 }
+/* логотип в мозаике: вращение строго вокруг центра семиугольника (а не его рамки) —
+   поворот на 1/7 оборота даёт ту же фигуру, поэтому цикл бесшовный, без рывков */
+.bp-hero .lc-hepta{transform-box:view-box;animation:lcTurn 8s infinite;backface-visibility:hidden}
+@keyframes lcTurn{0%,70%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.45,0,.25,1)}100%{transform:rotate(51.4286deg)}}
+@media (prefers-reduced-motion:reduce){.bp-hero .lc-hepta{animation:none}}
