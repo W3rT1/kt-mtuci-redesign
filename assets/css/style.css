@@ -1075,28 +1075,6 @@ html[data-theme="dark"] .quick__item--ann .qa small{color:var(--brand-3)}
 .textarea.ph-swap::placeholder{opacity:0}
 .textarea::placeholder{transition:opacity .18s}
 
-/* ================= «Подбор специальности» на главной ================= */
-.cta-band.cta-band--quiz{grid-template-columns:minmax(0,1fr) minmax(320px,44%);gap:40px;align-items:center}
-.cta-band--quiz .cta-band__art{position:absolute!important;right:-40px;top:50%;transform:translateY(-50%);width:440px;max-width:none;opacity:.16;pointer-events:none;z-index:0}
-.cta-quiz{position:relative;z-index:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:20px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.cta-quiz__head{display:flex;align-items:center;gap:12px;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#c9c1ea}
-.cta-quiz__bar{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden}
-.cta-quiz__bar i{display:block;height:100%;background:#fff;border-radius:4px}
-.cta-quiz h3{color:#fff;margin:10px 0 14px;font-size:1.15rem;line-height:1.3}
-.cta-quiz__opts{display:grid;gap:8px}
-.cta-quiz__opts button{display:flex;align-items:center;gap:12px;width:100%;min-width:0;text-align:left;padding:11px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-weight:600;font-size:.92rem;line-height:1.3;cursor:pointer;
-  transition:background .25s ease,border-color .25s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
-.cta-quiz__opts .em{flex:none;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.12);font-size:1.05rem}
-.cta-quiz__opts .tx{flex:1;min-width:0;overflow-wrap:break-word}
-.cta-quiz__opts svg{flex:none;width:18px;height:18px;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .3s}
-.cta-quiz__opts button:hover,.cta-quiz__opts button:focus-visible{background:#fff;color:#372579;border-color:#fff;transform:translateX(4px)}
-.cta-quiz__opts button:hover .em,.cta-quiz__opts button:focus-visible .em{background:#efecf8}
-.cta-quiz__opts button:hover svg,.cta-quiz__opts button:focus-visible svg{opacity:1;transform:none}
-.cta-quiz__opts button.picked{background:#fff;color:#372579;transform:scale(.98)}
-@media (max-width:1100px){.cta-band.cta-band--quiz{grid-template-columns:minmax(0,1fr) minmax(280px,46%);gap:28px}}
-@media (max-width:900px){.cta-band.cta-band--quiz{grid-template-columns:1fr;gap:22px;padding:28px}.cta-band--quiz .cta-band__art{top:0;transform:none;right:-80px;width:320px}}
-@media (max-width:480px){.cta-band.cta-band--quiz{padding:22px 18px}.cta-quiz{padding:16px;margin:0 -4px}.cta-quiz__opts button{padding:10px 12px;font-size:.88rem}}
-
 /* ================= страница теста ================= */
 .quiz{max-width:760px}
 .quiz__top{margin-bottom:26px}
@@ -1146,3 +1124,19 @@ html[data-theme="dark"] .quick__item--ann .qa small{color:var(--brand-3)}
 }
 /* старые браузеры без анимации grid-template-rows: просто показываем/скрываем */
 @supports not (grid-template-rows:0fr){.fold:not(.open){display:none}.fold{margin-top:0}}
+
+/* ---------- быстрые ссылки: подпись всегда внутри плитки, слова не рвутся ---------- */
+.quick__item{min-width:0}
+.quick__item .qt{flex:1 1 auto;min-width:0;line-height:1.3;overflow-wrap:normal;word-break:normal;hyphens:manual}
+@media (min-width:1101px){
+  .quick__grid{grid-template-columns:minmax(0,1.25fr) repeat(4,minmax(0,1fr))}
+  .quick__item{padding:16px;gap:12px}
+  .quick__item .ic{width:42px;height:42px}
+  .quick__item .qt{font-size:.95rem}
+}
+@media (min-width:1101px) and (max-width:1320px){.quick__item .qt{font-size:.88rem}.quick__item{gap:10px;padding:14px}.quick__item .ic{width:38px;height:38px}}
+/* телефоны: в плитках значок над подписью — длинным словам хватает всей ширины */
+@media (max-width:760px) and (min-width:381px){
+  .quick__item:not(.quick__item--ann){flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:10px}
+  .quick__item:not(.quick__item--ann) .qt{flex:none;width:100%}
+}
