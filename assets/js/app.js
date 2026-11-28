@@ -411,8 +411,8 @@
 
     <div class="container quick"><div class="quick__grid">
       ${h.slides.length ? `<a class="quick__item quick__item--ann reveal reveal-d1" id="annItem" href="#/"><span class="ic">${ic('megaphone')}</span><span class="qa"><small>Анонс</small><b id="annTitle"></b></span>${h.slides.length > 1 ? `<span class="ann-dots" aria-hidden="true">${h.slides.map(() => '<i></i>').join('')}</span>` : ''}</a>` : ''}
-      ${h.quickLinks.map((q, i) => `<a class="quick__item reveal reveal-d${i % 3 + 1}"${aAttrs(q.url)}><span class="ic">${ic(q.icon || iconFor(q.title))}</span>${esc(q.title)}</a>`).join('')}
-      <a class="quick__item reveal reveal-d3" href="#/quiz/"><span class="ic">${ic('quiz')}</span>Подобрать специальность</a>
+      ${h.quickLinks.map((q, i) => `<a class="quick__item reveal reveal-d${i % 3 + 1}"${aAttrs(q.url)}><span class="ic">${ic(q.icon || iconFor(q.title))}</span><span class="qt">${esc(q.title)}</span></a>`).join('')}
+      <a class="quick__item reveal reveal-d3" href="#/quiz/"><span class="ic">${ic('quiz')}</span><span class="qt">Подобрать специальность</span></a>
     </div></div>
 
     <section class="section"><div class="container">
@@ -427,11 +427,10 @@
     </div></section>
 
     <section class="section"><div class="container">
-      <div class="cta-band cta-band--quiz reveal">
-        <div class="cta-band__art" aria-hidden="true">${brandWave(4, 3, 5, { ox: -1, oy: 1 })}</div>
-        <div class="cta-band__text"><span class="eyebrow">Подбор специальности</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на ${quizQ().length} коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего. Это займёт около минуты.</p>
+      <div class="cta-band reveal">
+        <div class="cta-band__text"><span class="eyebrow">Новое</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на 6 коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего.</p>
           <div class="cta-band__btns"><a class="btn btn-white" href="#/quiz/">${ic('quiz')} Пройти тест</a><button class="btn btn-light" data-ai-open>${ic('spark')} Спросить помощника</button></div></div>
-        ${ctaQuizCard()}
+        <div class="cta-band__art">${brandWave(4, 3, 5, { ox: -1, oy: 1 })}</div>
       </div>
     </div></section>
 
@@ -616,23 +615,6 @@
   const quizReset = () => ({ i: 0, scores: {}, hist: [] });
   const RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Блок на главной: первый вопрос теста прямо в баннере — ответ сразу переносит на второй вопрос
-  function ctaQuizCard() {
-    const Q = quizQ(), q = Q[0]; if (!q) return '';
-    return `<div class="cta-quiz" id="ctaQuiz">
-      <div class="cta-quiz__head"><span>Вопрос 1 из ${Q.length}</span><span class="cta-quiz__bar"><i style="width:${Math.round(100 / Q.length)}%"></i></span></div>
-      <h3>${esc(q.q)}</h3>
-      <div class="cta-quiz__opts">${q.o.map((o, k) => `<button type="button" data-k="${k}"><span class="em" aria-hidden="true">${o[0]}</span><span class="tx">${esc(o[1])}</span>${ic('arrow')}</button>`).join('')}</div>
-    </div>`;
-  }
-  function bindCtaQuiz() {
-    $$('#ctaQuiz button').forEach(b => b.onclick = () => {
-      b.classList.add('picked');
-      quizPending = +b.dataset.k;
-      setTimeout(() => { location.hash = '#/quiz/'; }, RM() ? 0 : 260);
-    });
-  }
-
   function viewQuiz() {
     quizState = quizReset();
     return `${pageHero('Подбор специальности', [{ title: 'Абитуриенту', href: '#/abitur/' }, { title: 'Тест' }])}<div class="container"><div class="quiz" id="quiz" aria-live="polite"></div></div><div id="quizContacts"></div>`;
@@ -771,7 +753,7 @@
     observeReveal();
     watchAnimations();
     const act = $('.side a.active'); if (act && innerWidth < 760) act.parentElement.scrollLeft = act.offsetLeft - 16;
-    if (path === '/') { bindHome(); bindCtaQuiz(); }
+    if (path === '/') bindHome();
     if (path === '/news/') bindNews(q);
     if (path === '/quiz/') renderQuiz();
     bindForms();
@@ -896,7 +878,19 @@
     $$('.reveal:not(.in)').forEach(el => revealObs.observe(el));
   }
 
+  // Подписи быстрых ссылок: если самое длинное слово не влезает в плитку — чуть уменьшаем шрифт
+  function fitQuick() {
+    $$('.quick__item .qt').forEach(t => {
+      t.style.fontSize = '';
+      let fs = parseFloat(getComputedStyle(t).fontSize), guard = 0;
+      while (t.scrollWidth > t.clientWidth + 1 && fs > 12 && guard++ < 12) { fs -= 0.5; t.style.fontSize = fs + 'px'; }
+    });
+  }
+  let fitQuickBound = false;
   function bindHome() {
+    fitQuick();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitQuick);
+    if (!fitQuickBound) { fitQuickBound = true; let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if ($('.quick__item .qt')) fitQuick(); }, 120); }); }
     // блок «Анонс» в ряду быстрых ссылок: анонсы (слайды из админки) сменяются по очереди
     const ann = $('#annItem'), slides = D.home.slides || []; let i = 0, timer, paused = false;
     const draw = () => {
