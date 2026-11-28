@@ -540,13 +540,38 @@
   }
 
   // ---------------- разделы ----------------
+  // Описание раздела, перенесённое со старого сайта, содержит список ссылок-дублей.
+  // Список убираем, а пункты, которых нет среди блоков раздела, превращаем в дополнительные блоки.
+  const secCache = new WeakMap();
+  function sectionParts(sec) {
+    if (secCache.has(sec)) return secCache.get(sec);
+    const box = document.createElement('div'); box.innerHTML = sec.intro || '';
+    const extra = [];
+    const norm2 = s => String(s || '').toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+    const known = it => sec.items.concat(extra).some(x => (x.route && it.route && x.route === it.route) || (x.url && it.url && x.url === it.url) || norm2(x.title) === norm2(it.title));
+    // ссылка-пункт списка: <a> с текстом, лежащая прямо в блоке-списке (телефоны и почты внутри абзацев не трогаем)
+    $$('div > a', box).filter(a => a.parentElement.children.length > 1 && [...a.parentElement.children].every(c => c.tagName === 'A')).forEach(a => {
+      const title = a.textContent.replace(/\s+/g, ' ').trim(), href = a.getAttribute('href') || '';
+      if (title && href) {
+        const it = href.startsWith('#/') ? { title, route: href.slice(1) } : { title, url: href };
+        if (!known(it)) extra.push(it);
+      }
+      const list = a.parentElement; a.remove();
+      if (!list.children.length && !list.textContent.trim()) list.remove();
+    });
+    const intro = box.textContent.trim() || box.querySelector('img,video,iframe,table') ? box.innerHTML.trim() : '';
+    const res = { intro, items: sec.items.concat(extra) };
+    secCache.set(sec, res); return res;
+  }
+
   function viewSection(sec) {
+    const sp = sectionParts(sec);
     return `${pageHero(sec.title, [])}
     <div class="container"><div class="page-layout page-layout--wide">
-      ${sec.intro ? `<div class="prose reveal">${sec.intro}</div>` : ''}
-      <div class="spec-grid">${sec.items.map((it, i) => {
+      ${sp.intro ? `<div class="prose reveal">${sp.intro}</div>` : ''}
+      <div class="spec-grid">${sp.items.map((it, i) => {
         const pg = it.route && D.pages[it.route];
-        const desc = pg ? stripHtml(pg.html).slice(0, 120) : (it.route === '/abitur/specialties/' ? D.specialties.length + ' специальностей' : it.route === '/news/' ? D.news.length + ' новостей' : it.url ? 'Внешний ресурс' : '');
+        const desc = pg ? stripHtml(pg.html).slice(0, 120) : (it.route === '/abitur/specialties/' ? D.specialties.length + ' специальностей' : it.route === '/news/' ? D.news.length + ' новостей' : it.url ? (/\.pdf($|\?)/i.test(it.url) ? 'Документ PDF' : 'Внешний ресурс') : '');
         return `<a class="spec-card reveal reveal-d${i % 3 + 1}" style="min-height:0"${aAttrs(linkOf(it))}><span class="spec-card__icon">${ic(iconFor(it.title))}</span><h3 style="padding-right:50px">${esc(it.title)}</h3><p class="muted" style="font-size:.88rem;margin:0">${esc(desc)}${desc.length >= 120 ? '…' : ''}</p></a>`;
       }).join('')}</div>
     </div></div>`;
@@ -557,7 +582,7 @@
   }
   function sideNav(sec, path) {
     if (!sec || !sec.items.length) return '';
-    return `<aside class="side"><div class="side__title">${esc(sec.title)}</div>${sec.items.map(it => `<a${aAttrs(linkOf(it))} class="${it.route === path ? 'active' : ''}"><span class="side__txt">${esc(it.title)}</span>${it.url ? ic('ext', 'ext') : ''}</a>`).join('')}</aside>`;
+    return `<aside class="side"><div class="side__title">${esc(sec.title)}</div>${sectionParts(sec).items.map(it => `<a${aAttrs(linkOf(it))} class="${it.route === path ? 'active' : ''}"><span class="side__txt">${esc(it.title)}</span>${it.url ? ic('ext', 'ext') : ''}</a>`).join('')}</aside>`;
   }
 
   // ---------------- обычная страница (с авто-вкладками) ----------------
@@ -880,6 +905,19 @@
 
   // документы: значки PDF/DOC, галереи: лайтбокс
   function enhanceProse() {
+    // списки ссылок со старого сайта (<div><a><p>…</p></a><a>…</a></div>) показываем блоками, а не строками-ссылками
+    $$('.prose div').filter(d => d.children.length > 1 && [...d.children].every(c => c.tagName === 'A' && c.querySelector('p'))).forEach(d => {
+      d.classList.add('link-grid');
+      [...d.children].forEach(a => {
+        const t = a.textContent.replace(/\s+/g, ' ').trim(), href = a.getAttribute('href') || '';
+        a.textContent = t;
+        if (/\.(pdf|docx?|xlsx?|pptx?|zip|rar|rtf|odt)(\?|$)/i.test(href)) return;   // документы оформит код ниже
+        const ext = isExt(href);
+        a.classList.add('link-card');
+        a.innerHTML = `<span class="link-card__ic">${ic(ext ? 'ext' : 'arrow')}</span><span class="link-card__t"><b>${esc(t)}</b><small>${ext ? 'Внешний ресурс' : 'Страница сайта'}</small></span>`;
+        if (ext) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+      });
+    });
     $$('.prose a[href]').forEach(a => {
       const href = a.getAttribute('href');
       // значок-документ со старого сайта (огромный SVG без размеров) заменяем компактной карточкой
