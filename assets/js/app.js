@@ -430,7 +430,7 @@
       <div class="cta-band reveal">
         <div class="cta-band__text"><span class="eyebrow">Новое</span><h2>Не знаете, какую специальность выбрать?</h2><p>Ответьте на 6 коротких вопросов — подскажем, какие направления колледжа подходят вам больше всего.</p>
           <div class="cta-band__btns"><a class="btn btn-white" href="#/quiz/">${ic('quiz')} Пройти тест</a><button class="btn btn-light" data-ai-open>${ic('spark')} Спросить помощника</button></div></div>
-        <div class="cta-band__art">${brandWave(4, 3, 5, { ox: -1, oy: 1 })}</div>
+        ${ctaSpecShow()}
       </div>
     </div></section>
 
@@ -440,6 +440,47 @@
     </div></section>
 
     ${contactsBlock()}`;
+  }
+
+  // Баннер «Не знаете, какую специальность выбрать?»: анимированные иконки специальностей сменяют друг друга по кругу
+  function ctaSpecShow() {
+    const list = D.specialties || []; if (!list.length) return '';
+    return `<div class="cta-band__art cta-spec" id="ctaSpec">
+      <div class="cta-spec__stage">${list.map((sp, i) => `<a class="cta-spec__item${i ? '' : ' on'}" href="#/abitur/specialties/${esc(sp.code)}/" data-i="${i}"${i ? ' tabindex="-1" aria-hidden="true"' : ''}>
+          <span class="cta-spec__ic">${specAnim(sp.code)}</span>
+          <span class="cta-spec__code">${esc(sp.code)}</span><span class="cta-spec__name">${esc(sp.name)}</span></a>`).join('')}</div>
+      ${list.length > 1 ? `<div class="cta-spec__dots">${list.map((sp, i) => `<button type="button" data-i="${i}" class="${i ? '' : 'on'}" aria-label="${esc(sp.code + ' ' + sp.name)}"></button>`).join('')}</div>` : ''}
+    </div>`;
+  }
+  let ctaSpecTimer = null;
+  function bindCtaSpec() {
+    clearInterval(ctaSpecTimer);
+    const box = $('#ctaSpec'); if (!box) return;
+    const items = $$('.cta-spec__item', box), dots = $$('.cta-spec__dots button', box);
+    if (items.length < 2) return;
+    let cur = 0, hover = false;
+    const show = n => {
+      n = (n + items.length) % items.length; if (n === cur) return;
+      const prev = items[cur];
+      prev.classList.remove('on'); prev.classList.add('off'); prev.setAttribute('aria-hidden', 'true'); prev.tabIndex = -1;
+      setTimeout(() => prev.classList.remove('off'), 700);
+      items[n].classList.add('on'); items[n].removeAttribute('aria-hidden'); items[n].removeAttribute('tabindex');
+      dots.forEach((d, k) => d.classList.toggle('on', k === n));
+      cur = n;
+    };
+    dots.forEach(d => d.onclick = () => { show(+d.dataset.i); restart(); });
+    box.onmouseenter = () => { hover = true; }; box.onmouseleave = () => { hover = false; };
+    box.addEventListener('focusin', () => { hover = true; }); box.addEventListener('focusout', () => { hover = false; });
+    const restart = () => {
+      clearInterval(ctaSpecTimer);
+      ctaSpecTimer = setInterval(() => {
+        if (!box.isConnected) { clearInterval(ctaSpecTimer); return; }
+        const band = box.closest('.cta-band');
+        if (hover || document.hidden || (band && band.classList.contains('anim-off'))) return;   // не листаем, пока не видно или наведена мышь
+        show(cur + 1);
+      }, 3600);
+    };
+    restart();
   }
 
   function specCard(sp, i = 0) {
@@ -753,7 +794,7 @@
     observeReveal();
     watchAnimations();
     const act = $('.side a.active'); if (act && innerWidth < 760) act.parentElement.scrollLeft = act.offsetLeft - 16;
-    if (path === '/') bindHome();
+    if (path === '/') { bindHome(); bindCtaSpec(); }
     if (path === '/news/') bindNews(q);
     if (path === '/quiz/') renderQuiz();
     bindForms();
